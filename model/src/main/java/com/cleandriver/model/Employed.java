@@ -1,10 +1,7 @@
 package com.cleandriver.model;
 
 import com.cleandriver.model.importantesAhora.Area;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,18 +10,27 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Entity
+@Entity(name = "employed")
 public class Employed {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "employed_id")
     private Long id;
 
     private String name;
 
+    private String lastName;
+
+    @Column(unique = true)
+    private String dni;
+
     private String phone;
 
+    @OneToOne(cascade = CascadeType.ALL,orphanRemoval = true)
+    @JoinColumn(name = "address_id")
     private Address address;
 
+    @OneToOne
     private Area area;
 
 }

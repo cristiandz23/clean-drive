@@ -1,10 +1,7 @@
 package com.cleandriver.model;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,18 +9,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Entity
+@Entity(name = "wash")
 public class Wash {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "wash_id")
     private Long id;
 
-    private Car car;
+    @Column(nullable = false)
+    private Vehicle vehicle;
 
+    @Column(nullable = false)
     private Appointment appointment;
 
+    @OneToOne()
+    @JoinColumn(name = "washing_station_id")
     private WashingStation washingStation;
 
+    @Column(nullable = false)
     private Employed employed;
 
 }

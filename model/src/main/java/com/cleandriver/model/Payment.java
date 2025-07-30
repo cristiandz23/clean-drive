@@ -14,13 +14,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Entity
+@Entity(name = "payment")
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "payment_id")
     private Long id;
+
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
+
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 

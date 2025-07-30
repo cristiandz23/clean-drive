@@ -7,15 +7,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Entity
+@Entity(name = "service_type")
 public class ServiceType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "service_type_id")
     private Long id;
 
     private String name;
@@ -25,8 +27,9 @@ public class ServiceType {
     private int durationInMinutes;
 
     private String description;
+
     @Enumerated(EnumType.STRING)
-    private VehicleType vehicleType;
+    private List<VehicleType> vehicleType;
 
 }
 

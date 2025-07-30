@@ -9,12 +9,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Entity
-public class Car {
+@Entity(name = "vehicle")
+public class Vehicle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "vehicle_id")
     private Long id;
 
+    @Column(unique = true,nullable = false)
     private String plateNumber;
 
     private String model;
@@ -22,9 +24,14 @@ public class Car {
     private String color;
 
     private String observation;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false,name = "vehicle_type")
     private VehicleType vehicleType;
 
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    @Column(nullable = false)
     private Customer customer;
 
 }

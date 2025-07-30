@@ -1,4 +1,4 @@
-package com.cleandriver.mapper;
+package com.cleandriver.service.mapper;
 
 public interface ServiceTypeMapper {
 }

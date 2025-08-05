@@ -6,10 +6,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Entity(name = "wash_station")
+@Entity(name = "washing_station")
 public class WashingStation {
 
     @Id
@@ -19,5 +21,10 @@ public class WashingStation {
 
     private String name;
 
-    private ServiceType serviceType;
+    @OneToMany(mappedBy = "washingStation")
+    private List<Appointment> appointments;
+
+    private boolean isBusy;
+
+//    private ServiceType serviceType;
 }

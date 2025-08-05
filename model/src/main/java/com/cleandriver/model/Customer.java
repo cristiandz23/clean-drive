@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Entity(name = "customer")
+@Entity(name = "Customer")
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,12 +23,16 @@ public class Customer {
 
     private String name;
 
+    private String lastName;
+
+    private String dni;
+
     private LocalDateTime registeredAt;
 
     @OneToOne(cascade = {CascadeType.ALL},orphanRemoval = true)
     private Address address;
 
-    @OneToMany(mappedBy = "vehicles",cascade = {CascadeType.PERSIST},orphanRemoval = true)
+    @OneToMany(mappedBy = "customer",cascade = {CascadeType.PERSIST},orphanRemoval = true)
     private List<Vehicle> vehicles;
 
 

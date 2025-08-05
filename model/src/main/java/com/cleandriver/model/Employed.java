@@ -6,11 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Entity(name = "employed")
+@Entity(name = "Employed")
 public class Employed {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,5 +34,9 @@ public class Employed {
 
     @OneToOne
     private Area area;
+
+    private LocalDateTime createdAt;
+
+    private boolean isActive;
 
 }

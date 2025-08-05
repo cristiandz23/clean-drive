@@ -1,0 +1,15 @@
+services:
+  clean_drive:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: clean_drive
+    ports:
+      - "3306:3306"
+
+  mysql_myadmin:
+    image: phpmyadmin:5.0.2
+    environment:
+      PMA_HOST: clean_drive
+    ports:
+      - "8085:80"

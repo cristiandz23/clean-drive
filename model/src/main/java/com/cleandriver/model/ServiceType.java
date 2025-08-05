@@ -1,5 +1,6 @@
 package com.cleandriver.model;
 
+import com.cleandriver.config.VehicleTypeListConverter;
 import com.cleandriver.model.enums.VehicleType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Entity(name = "service_type")
+@Entity(name = "Service_Type")
 public class ServiceType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +29,8 @@ public class ServiceType {
 
     private String description;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = VehicleTypeListConverter.class)
+    @Column(name = "vehicle_types")
     private List<VehicleType> vehicleType;
 
 }

@@ -3,12 +3,13 @@ package com.cleandriver.model;
 import com.cleandriver.model.enums.VehicleType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Data @Builder
 @Entity(name = "vehicle")
 public class Vehicle {
     @Id
@@ -30,8 +31,7 @@ public class Vehicle {
     private VehicleType vehicleType;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
-    @Column(nullable = false)
+    @JoinColumn(name = "customer_id",nullable = false)
     private Customer customer;
 
 }

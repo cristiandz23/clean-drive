@@ -3,12 +3,15 @@ package com.cleandriver.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Data @Builder
 @Entity(name = "wash")
 public class Wash {
     @Id
@@ -16,17 +19,22 @@ public class Wash {
     @Column(name = "wash_id")
     private Long id;
 
-    @Column(nullable = false)
-    private Vehicle vehicle;
+//    @OneToOne(optional = false)
+//    @JoinColumn(name = "vehicle_id")
+//    private Vehicle vehicle;
 
-    @Column(nullable = false)
+    private LocalDateTime initAt;
+
+    private LocalDateTime endAt;
+
+    @OneToOne(optional = false,cascade = {CascadeType.PERSIST})
     private Appointment appointment;
 
-    @OneToOne()
+    @OneToOne
     @JoinColumn(name = "washing_station_id")
     private WashingStation washingStation;
 
-    @Column(nullable = false)
+    @OneToOne
     private Employed employed;
 
 }

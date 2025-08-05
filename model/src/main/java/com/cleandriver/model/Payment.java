@@ -4,6 +4,7 @@ import com.cleandriver.model.enums.PaymentMethod;
 import com.cleandriver.model.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Data @Builder
 @Entity(name = "payment")
 public class Payment {
     @Id
@@ -30,5 +31,7 @@ public class Payment {
     private BigDecimal amount;
 
     private LocalDateTime paymentDate;
+
+    private LocalDateTime createdAt;
 
 }

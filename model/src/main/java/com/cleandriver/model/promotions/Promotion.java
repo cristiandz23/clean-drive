@@ -16,7 +16,7 @@ import java.util.List;
 @Entity(name = "promotion")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "promotion_type")
-public abstract class Promotion {
+public class Promotion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "promotion_id")

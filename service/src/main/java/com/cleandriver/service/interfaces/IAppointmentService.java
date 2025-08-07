@@ -5,6 +5,7 @@ import com.cleandriver.dto.appointment.AppointmentResponse;
 import com.cleandriver.dto.appointment.ExpressAppointmentRequest;
 import com.cleandriver.model.Appointment;
 import com.cleandriver.model.enums.AppointmentStatus;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

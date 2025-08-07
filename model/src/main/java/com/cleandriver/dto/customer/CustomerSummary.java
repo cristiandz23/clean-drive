@@ -1,30 +1,17 @@
 package com.cleandriver.dto.customer;
 
-import com.cleandriver.model.Address;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
-
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
-public class CustomerResponse {
-
-    private Long id;
-
-    private String phone;
+public class CustomerSummary {
 
     private String name;
-
     private String lastName;
-
     private String dni;
-
-    private Address address;
-
-    private List<String> vehicles;
+    private String phone;
 
 }

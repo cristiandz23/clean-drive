@@ -1,7 +1,9 @@
 package com.cleandriver.service.interfaces;
 
+import com.cleandriver.dto.serviceType.ServiceTypeDto;
 import com.cleandriver.dto.washingstation.WashingStationDto;
 import com.cleandriver.model.WashingStation;
+import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,4 +27,5 @@ public interface IWashingStationService {
 
     void setFreeStation(Long stationId);
 
+    WashingStationDto createWashingStation(WashingStationDto serviceType);
 }

@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -20,11 +22,13 @@ public class ServiceType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "service_type_id")
     private Long id;
-
+    @Column(unique = true,nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private BigDecimal price;
 
+    @Column(nullable = false)
     private int durationInMinutes;
 
     private String description;
@@ -32,6 +36,8 @@ public class ServiceType {
     @Convert(converter = VehicleTypeListConverter.class)
     @Column(name = "vehicle_types")
     private List<VehicleType> vehicleType;
+
+    private LocalDate createdAt;
 
 }
 

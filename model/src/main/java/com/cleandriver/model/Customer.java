@@ -1,11 +1,12 @@
 package com.cleandriver.model;
 
+import com.cleandriver.model.promotions.Promotion;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -21,13 +22,15 @@ public class Customer {
 
     private String phone;
 
+    @Column(nullable = false)
     private String name;
 
     private String lastName;
 
+    @Column(unique = true)
     private String dni;
 
-    private LocalDateTime registeredAt;
+    private LocalDate registeredAt;
 
     @OneToOne(cascade = {CascadeType.ALL},orphanRemoval = true)
     private Address address;
@@ -36,6 +39,8 @@ public class Customer {
     private List<Vehicle> vehicles;
 
 
-    @OneToMany(mappedBy = "customer", orphanRemoval = true)
-    private List<CustomerPromotion> promotions;
+//    private Appointment appointment;
+
+    @OneToMany( orphanRemoval = true)
+    private List<Promotion> promotions;
 }

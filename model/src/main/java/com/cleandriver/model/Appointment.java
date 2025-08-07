@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 
 @NoArgsConstructor
@@ -29,7 +30,7 @@ public class Appointment {
     @Column(nullable = false,name = "appointment_status")
     private AppointmentStatus status;
 
-    @OneToOne(optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "service_type_id")
     private ServiceType serviceType;
 
@@ -37,7 +38,7 @@ public class Appointment {
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
-    @OneToOne(optional = false)
+    @ManyToOne()
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
@@ -45,11 +46,25 @@ public class Appointment {
     @JoinColumn(name = "washing_station_id", nullable = false)
     private WashingStation washingStation;
 
-    @OneToOne
+    @ManyToOne(optional = false,cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "vehicle_id")
     private Vehicle vehicleToWash;
 
     private LocalDateTime createdAt;
 
+    @PrePersist
+    @PreUpdate
+    public void truncateDate() {
+        if (createdAt != null) {
+            createdAt = createdAt.truncatedTo(ChronoUnit.MINUTES);
+        }
+        if (startDateTime != null) {
+            startDateTime = startDateTime.truncatedTo(ChronoUnit.MINUTES);
+        }
+        if (endDateTime != null) {
+            endDateTime = endDateTime.truncatedTo(ChronoUnit.MINUTES);
+        }
 
 
+    }
 }

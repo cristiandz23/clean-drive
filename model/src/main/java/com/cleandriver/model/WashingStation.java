@@ -19,6 +19,7 @@ public class WashingStation {
     @Column(name = "washing_station_id")
     private Long id;
 
+    @Column(unique = true)
     private String name;
 
     @OneToMany(mappedBy = "washingStation")

@@ -1,6 +1,7 @@
 package com.cleandriver.dto.employed;
 
 import com.cleandriver.dto.AddressDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class EmployedResponse {
 
     private AddressDto addressDto;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime createdAt;
 
     private boolean isActive;

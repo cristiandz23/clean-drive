@@ -1,11 +1,14 @@
 package com.cleandriver.model;
 
+import com.cleandriver.config.UppercaseConverter;
 import com.cleandriver.model.enums.VehicleType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,10 +20,15 @@ public class Vehicle {
     @Column(name = "vehicle_id")
     private Long id;
 
-    @Column(unique = true,nullable = false)
+    @Column(unique = true, nullable = false)
+    @Convert(converter = UppercaseConverter.class)
     private String plateNumber;
 
+    private String brand;
+
     private String model;
+
+    private String year;
 
     private String color;
 
@@ -31,7 +39,9 @@ public class Vehicle {
     private VehicleType vehicleType;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id",nullable = false)
+    @JoinColumn(name = "customer_id")
     private Customer customer;
+
+    private LocalDate createdAt;
 
 }

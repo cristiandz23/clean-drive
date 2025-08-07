@@ -10,11 +10,9 @@ import com.cleandriver.model.enums.AppointmentStatus;
 import com.cleandriver.model.enums.PaymentMethod;
 import com.cleandriver.model.enums.PaymentStatus;
 import com.cleandriver.persistence.AppointmentRepository;
-import com.cleandriver.service.interfaces.IAppointmentService;
-import com.cleandriver.service.interfaces.ICustomerService;
-import com.cleandriver.service.interfaces.IServiceTypeService;
-import com.cleandriver.service.interfaces.IWashingStationService;
+import com.cleandriver.service.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -38,6 +36,8 @@ public class AppointmentService implements IAppointmentService {
     private IServiceTypeService serviceTypeService;
     @Autowired
     private ICustomerService customerService;
+    @Autowired
+    private IVehicleService vehicleService;
 
 
     @Autowired
@@ -63,7 +63,7 @@ public class AppointmentService implements IAppointmentService {
         LocalDateTime start = LocalDate.now().atStartOfDay();
         LocalDateTime end = start.plusDays(1); // inicio del día siguiente
 
-        return appointmentRepository.findAllByDateTimeBetween(start, end)
+        return appointmentRepository.findAllByStartDateTimeBetween(start, end)
                 .stream()
                 .map(appointmentMapper::toResponse)
                 .toList();
@@ -74,7 +74,7 @@ public class AppointmentService implements IAppointmentService {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = start.plusDays(1); // Fin del día
 
-        return appointmentRepository.findAllByDateTimeBetween(start, end)
+        return appointmentRepository.findAllByStartDateTimeBetween(start, end)
                 .stream()
                 .map(appointmentMapper::toResponse)
                 .toList();
@@ -112,6 +112,8 @@ public class AppointmentService implements IAppointmentService {
         LocalDateTime startAppointment = appointmentRequest.getDateTime();
         LocalDateTime endAppointment = appointmentRequest.getDateTime().plusMinutes(serviceType.getDurationInMinutes());
 
+        if(appointmentRepository.hasAppointmentInRangeByVehiclePlate(vehicle.getPlateNumber(), startAppointment,endAppointment)==1)
+            throw new RuntimeException("Este auto ya tiene un turno dentro de este rango horario");
 
         List<WashingStation> washingStations = this.getAvailableWashingStationOnAppointment(startAppointment, endAppointment);
 
@@ -121,6 +123,7 @@ public class AppointmentService implements IAppointmentService {
 
 
         Appointment appointment = this.buildAppointment(
+                customer,
                 appointmentRequest.getPaymentMethod(),
                 serviceType,
                 startAppointment,
@@ -129,7 +132,7 @@ public class AppointmentService implements IAppointmentService {
                 vehicle
         );
 
-        return appointmentMapper.toResponse(appointment);
+        return appointmentMapper.toResponse(appointmentRepository.save(appointment));
     }
 
     @Override
@@ -144,14 +147,21 @@ public class AppointmentService implements IAppointmentService {
 
         WashingStation selectedStation = this.resolveWashingStation(appointmentRequest.getWashingStation(), stations);
 
-        serviceTypeService.validateVehicleTypeCompatibility(serviceType, appointmentRequest.getVehicleType());
+        serviceTypeService.validateVehicleTypeCompatibility(serviceType, appointmentRequest.getVehicle().getVehicleType());
 
-        Vehicle vehicle = Vehicle.builder()
-                .plateNumber(appointmentRequest.getPlateNumber())
-                .vehicleType(appointmentRequest.getVehicleType())
-                .build();
+        Vehicle vehicle = vehicleService.findVehicleOrNullByPlateNumber(appointmentRequest.getVehicle().getPlateNumber());
+        if (vehicle == null) {
+            vehicle = vehicleService.regiterVehicleByExpressAppointment(appointmentRequest.getVehicle());
+
+        }
+
+        if(appointmentRepository.hasAppointmentInRangeByVehiclePlate(vehicle.getPlateNumber(),
+                startAppointment,endAppointment) == 1)
+            throw new RuntimeException("Este auto ya tiene un turno dentro de este rango horario");
+
 
         Appointment appointment = this.buildAppointment(
+                null,
                 appointmentRequest.getPayment(),
                 serviceType,
                 startAppointment,
@@ -243,7 +253,8 @@ public class AppointmentService implements IAppointmentService {
 
 
 
-    private Appointment buildAppointment(PaymentMethod paymentMethod,
+    private Appointment buildAppointment(Customer customer,
+                                         PaymentMethod paymentMethod,
                                          ServiceType serviceType,
                                          LocalDateTime start,
                                          LocalDateTime end,
@@ -251,6 +262,7 @@ public class AppointmentService implements IAppointmentService {
                                          Vehicle vehicle) {
 
         return Appointment.builder()
+                .customer(customer)
                 .serviceType(serviceType)
                 .payment(Payment.builder()
                         .amount(serviceType.getPrice())
@@ -260,7 +272,7 @@ public class AppointmentService implements IAppointmentService {
                         .build())
                 .startDateTime(start)
                 .endDateTime(end)
-                .status(AppointmentStatus.PENDING)
+                .status(AppointmentStatus.CREATED)
                 .createdAt(LocalDateTime.now())
                 .washingStation(station)
                 .vehicleToWash(vehicle)
@@ -290,12 +302,12 @@ public class AppointmentService implements IAppointmentService {
 
     private boolean isValidTransition(AppointmentStatus current, AppointmentStatus next) {
         return switch (current) {
-            case PENDING -> Objects.equals(AppointmentStatus.CANCELED, next);
-            case CONFIRMED -> List.of(AppointmentStatus.PENDING, AppointmentStatus.CANCELED).contains(next);
+            case CREATED -> Objects.equals(AppointmentStatus.CANCELED, next);
+            case CONFIRMED -> List.of(AppointmentStatus.CREATED, AppointmentStatus.CANCELED).contains(next);
             case IN_PROGRESS ->
                     Objects.equals(AppointmentStatus.CONFIRMED, next);//ANALIZAR SI ES POSIBLE CANCEAR Y APLICAR LA LOGICA CORRESPONDIENTE
             case COMPLETED -> Objects.equals(AppointmentStatus.IN_PROGRESS, next);
-            case CANCELED -> List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING).contains(next);
+            case CANCELED -> List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.CREATED).contains(next);
             case NO_SHOW -> Objects.equals(AppointmentStatus.CONFIRMED, next);
             default -> false;
 
@@ -305,6 +317,7 @@ public class AppointmentService implements IAppointmentService {
     private List<WashingStation> getAvailableWashingStationOnAppointment(
             LocalDateTime startAppointment, LocalDateTime endAppointment
     ) {
+
         List<WashingStation> washingStations = washingStationService.getAvailableStations(startAppointment, endAppointment);
 //                .stream()
 //                .map(washingStationMapper::toWashingStation)
@@ -316,8 +329,8 @@ public class AppointmentService implements IAppointmentService {
     }
 
     private Vehicle getVehicleFromCustomer(Customer customer, String plateNumber) {
-        List<Vehicle> vehicles = customer.getVehicles();
 
+        List<Vehicle> vehicles = customer.getVehicles();
 
         List<String> plateNumbers = new ArrayList<>();
         vehicles.forEach(ve -> plateNumbers.add(ve.getPlateNumber()));

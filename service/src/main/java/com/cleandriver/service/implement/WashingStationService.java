@@ -44,7 +44,13 @@ public class WashingStationService implements IWashingStationService {
 
     @Override
     public List<WashingStation> getAvailableStations(LocalDateTime startAppointment, LocalDateTime endAppointment) {
-        return List.of();
+        if(washingStationRepository.count()<1)
+            throw new RuntimeException("No hay estacines cargadas en la base de datos");
+
+        List<WashingStation> washingStations = washingStationRepository.findAvailableStations(startAppointment,endAppointment);
+        if(washingStations.isEmpty())
+            throw new RuntimeException("No hay washing stations disponibles en el rango horario");
+        return washingStations;
     }
 
     @Override
@@ -57,8 +63,18 @@ public class WashingStationService implements IWashingStationService {
     @Override
     public void setFreeStation(Long stationId) {
         WashingStation washingStation = this.findWashingStation(stationId);
-        washingStation.setBusy(falsen);
+        washingStation.setBusy(false);
         washingStationRepository.save(washingStation);
+    }
+
+    @Override
+    public WashingStationDto createWashingStation(WashingStationDto washingStation) {
+
+        WashingStation newWashingStation = washingStationMapper.toWashingStation(washingStation);
+
+        washingStation.setBusy(false);
+
+        return washingStationMapper.toDto(washingStationRepository.save(newWashingStation));
     }
 
     @Override

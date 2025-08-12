@@ -27,5 +27,13 @@ public class WashingStation {
 
     private boolean isBusy;
 
-//    private ServiceType serviceType;
+    @Override
+    public String toString() {
+        return "WashingStation{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", isBusy=" + isBusy +
+                '}';
+    }
+    //    private ServiceType serviceType;
 }

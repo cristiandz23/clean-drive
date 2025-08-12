@@ -1,6 +1,8 @@
 package com.cleandriver.service.implement;
 
 import com.cleandriver.dto.serviceType.ServiceTypeDto;
+import com.cleandriver.exception.generalExceptions.ResourceNotFoundException;
+import com.cleandriver.exception.serviceTypeException.IncompatibleServiceTypeException;
 import com.cleandriver.mapper.ServiceTypeMapper;
 import com.cleandriver.model.ServiceType;
 import com.cleandriver.model.enums.VehicleType;
@@ -31,14 +33,14 @@ public class ServiceTypeService implements IServiceTypeService {
 
     public void validateVehicleTypeCompatibility(ServiceType serviceType, VehicleType vehicleType) {
         if (!serviceType.getVehicleType().contains(vehicleType)) {
-            throw new IllegalArgumentException("Vehicle type not compatible with service");
+            throw new IncompatibleServiceTypeException("Vehicle type " + vehicleType +" not compatible with service " +serviceType );
         }
     }
 
     @Override
     public ServiceType getServiceType(Long serviceTypeId) {
        return  serviceTypeRepository.findById(serviceTypeId).orElseThrow(
-                () -> new RuntimeException("no se encontro service type")
+                () -> new ResourceNotFoundException("no se encontro service type con id " + serviceTypeId)
         );
 
     }

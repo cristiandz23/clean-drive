@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -35,7 +36,7 @@ public class Employed {
     @OneToOne
     private Area area;
 
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 
     private boolean isActive;
 

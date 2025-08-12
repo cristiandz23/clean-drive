@@ -21,8 +21,7 @@ public class LoyaltyPromotion extends Promotion{
     @Column(nullable = false)
     private int timeRangeInWeeks;
 
-    @Column(nullable = false)
-    private double discount;
+
 
     public boolean isApplicable(int washAmount){
 

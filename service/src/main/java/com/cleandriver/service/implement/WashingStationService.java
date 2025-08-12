@@ -1,7 +1,10 @@
 package com.cleandriver.service.implement;
 
 import com.cleandriver.dto.washingstation.WashingStationDto;
+import com.cleandriver.exception.generalExceptions.ResourceNotFoundException;
+import com.cleandriver.exception.washingStationException.NotAvailableWashingStationException;
 import com.cleandriver.mapper.WashingStationMapper;
+import com.cleandriver.model.Appointment;
 import com.cleandriver.model.WashingStation;
 import com.cleandriver.persistence.WashingStationRepository;
 import com.cleandriver.service.interfaces.IWashingStationService;
@@ -45,11 +48,11 @@ public class WashingStationService implements IWashingStationService {
     @Override
     public List<WashingStation> getAvailableStations(LocalDateTime startAppointment, LocalDateTime endAppointment) {
         if(washingStationRepository.count()<1)
-            throw new RuntimeException("No hay estacines cargadas en la base de datos");
+            throw new NotAvailableWashingStationException("No hay estacines cargadas en la base de datos");
 
-        List<WashingStation> washingStations = washingStationRepository.findAvailableStations(startAppointment,endAppointment);
+        List<WashingStation> washingStations = washingStationRepository.findAvailableStations(startAppointment,endAppointment); // descomentar la linea que hace que los turnos deban estar pagados
         if(washingStations.isEmpty())
-            throw new RuntimeException("No hay washing stations disponibles en el rango horario");
+            throw new NotAvailableWashingStationException("No hay washing stations disponibles en el rango horario");
         return washingStations;
     }
 
@@ -80,7 +83,33 @@ public class WashingStationService implements IWashingStationService {
     @Override
     public WashingStation findWashingStation(Long id){
       return washingStationRepository.findById(id).orElseThrow(
-              () -> new RuntimeException("No se encontro washing station con id: " + id)
+              () -> new ResourceNotFoundException("No se encontro washing station con id: " + id)
       );
+    }
+
+    @Override
+    public WashingStation resolverWashingStation(Long washingStationId, Appointment appointment){
+
+        WashingStation washingStation = this.findWashingStation(washingStationId);
+
+        List<WashingStation> washingStations = this.getAvailableStations(LocalDateTime.now(),
+                LocalDateTime.now().plusMinutes(appointment.getServiceType().getDurationInMinutes()));
+
+
+        if(washingStations.isEmpty())
+            throw new NotAvailableWashingStationException("No hay estaciones de lavado disponibles");
+
+        if(washingStations.contains(washingStation))
+            return washingStation;
+        if(washingStations.stream().filter( w -> !w.isBusy()).toList().isEmpty())
+            throw new NotAvailableWashingStationException("Hay disponibles pero estan marcadas como ocupadas");
+
+        return washingStations.getFirst();
+
+    }
+
+    @Override
+    public List<WashingStation> getAvailableWashingStationOnAppointment(LocalDateTime startAppointment, LocalDateTime endAppointment) {
+        return washingStationRepository.findAvailableStations(startAppointment,endAppointment);
     }
 }

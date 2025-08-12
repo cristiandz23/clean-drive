@@ -31,6 +31,8 @@ public class AppointmentRequest {
     @NotNull(message = "customerDni cannot be null")
     private String customerDni;
 
+    private Long promotion;
+
     private Long washingStationId;
 
     @NotNull(message = "plateNumber cannot be null")

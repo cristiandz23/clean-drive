@@ -35,12 +35,8 @@ public class ExpressAppointmentRequest {
 
     private String customerDni;
 
-//    @NotNull(message = "plateNumber cannot be null")
-//    @Size(message = "plateNumber size should be within 6 and 7 long ")
-//    private String plateNumber;
 
-//    @NotNull
-//    private VehicleType vehicleType;
+    private Long promotion;
 
     @Positive
     private Long washingStation;

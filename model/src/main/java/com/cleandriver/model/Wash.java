@@ -1,6 +1,7 @@
 package com.cleandriver.model;
 
 
+import com.cleandriver.model.enums.WashStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +23,8 @@ public class Wash {
 //    @OneToOne(optional = false)
 //    @JoinColumn(name = "vehicle_id")
 //    private Vehicle vehicle;
+    @Enumerated(EnumType.STRING)
+    private WashStatus status;
 
     private LocalDateTime initAt;
 

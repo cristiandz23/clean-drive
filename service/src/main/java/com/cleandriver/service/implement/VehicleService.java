@@ -2,6 +2,7 @@ package com.cleandriver.service.implement;
 
 import com.cleandriver.dto.vehicle.VehicleRequest;
 import com.cleandriver.dto.vehicle.VehicleResponse;
+import com.cleandriver.exception.generalExceptions.ResourceNotFoundException;
 import com.cleandriver.mapper.VehicleMapper;
 import com.cleandriver.model.Customer;
 import com.cleandriver.model.Vehicle;
@@ -23,7 +24,7 @@ public class VehicleService implements IVehicleService {
 
     private Vehicle findVehicleByPlateNumber(String plateNumber){
         return vehicleRepository.findByPlateNumber(plateNumber).orElseThrow(
-                ()-> new RuntimeException("No se encontro vehicle con patente " + plateNumber)
+                ()-> new ResourceNotFoundException("No se encontro vehicle con patente " + plateNumber)
         );
     }
 

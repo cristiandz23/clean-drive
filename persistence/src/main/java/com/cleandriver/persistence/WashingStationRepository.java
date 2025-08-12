@@ -20,13 +20,21 @@ public interface WashingStationRepository extends JpaRepository<WashingStation,L
 //    List<WashingStation> findAvailableStations(@Param("start") LocalDateTime start,
 //                                               @Param("end") LocalDateTime end);
 
+//    @Query(value = "SELECT * FROM washing_station AS ws " +
+//            "WHERE ws.washing_station_id NOT IN (" +
+//            "SELECT a.washing_station_id FROM appointment AS a " +
+//            "WHERE a.start_date_time < :end AND a.end_date_time > :start)",nativeQuery = true)
+//    List<WashingStation> findAvailableStations(@Param("start") LocalDateTime start,
+//                                               @Param("end") LocalDateTime end);
+
+
     @Query(value = "SELECT * FROM washing_station AS ws " +
             "WHERE ws.washing_station_id NOT IN (" +
-            "SELECT a.washing_station_id FROM appointment AS a " +
-            "WHERE a.start_date_time < :end AND a.end_date_time > :start)",nativeQuery = true)
+            "  SELECT a.washing_station_id FROM appointment AS a " +
+            "  WHERE a.start_date_time < :end AND a.end_date_time > :start " +
+            "    AND a.appointment_status NOT IN ('COMPLETED', 'CANCELED','NO_SHOW','CREATED')" +
+            ")", nativeQuery = true)
     List<WashingStation> findAvailableStations(@Param("start") LocalDateTime start,
                                                @Param("end") LocalDateTime end);
-
-
 
 }

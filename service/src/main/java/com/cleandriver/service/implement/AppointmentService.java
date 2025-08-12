@@ -3,19 +3,27 @@ package com.cleandriver.service.implement;
 import com.cleandriver.dto.appointment.AppointmentRequest;
 import com.cleandriver.dto.appointment.AppointmentResponse;
 import com.cleandriver.dto.appointment.ExpressAppointmentRequest;
+import com.cleandriver.exception.appointmentExceptions.InvalidTransitionException;
+import com.cleandriver.exception.customerException.CustomerHasNotVehiclesException;
+import com.cleandriver.exception.customerException.CustomerVehicleNotFoundException;
+import com.cleandriver.exception.generalExceptions.ResourceNotFoundException;
+import com.cleandriver.exception.vehicleException.NoIndicatedPlateNumber;
+import com.cleandriver.exception.vehicleException.VehicleAlreadyAnAppointmentException;
+import com.cleandriver.exception.washingStationException.NotAvailableWashingStationException;
 import com.cleandriver.mapper.AppointmentMapper;
-import com.cleandriver.mapper.WashingStationMapper;
 import com.cleandriver.model.*;
 import com.cleandriver.model.enums.AppointmentStatus;
 import com.cleandriver.model.enums.PaymentMethod;
 import com.cleandriver.model.enums.PaymentStatus;
+import com.cleandriver.model.promotions.Promotion;
 import com.cleandriver.persistence.AppointmentRepository;
 import com.cleandriver.service.interfaces.*;
+import com.cleandriver.service.interfaces.appointment.IAppointmentService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +31,7 @@ import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 
+@Slf4j
 @Service
 public class AppointmentService implements IAppointmentService {
 
@@ -32,19 +41,22 @@ public class AppointmentService implements IAppointmentService {
 
     @Autowired
     private IWashingStationService washingStationService;
+
     @Autowired
     private IServiceTypeService serviceTypeService;
+
     @Autowired
     private ICustomerService customerService;
+
     @Autowired
     private IVehicleService vehicleService;
 
+    @Autowired
+    private IPromotionService promotionService;
 
     @Autowired
     private AppointmentMapper appointmentMapper;
 
-    @Autowired
-    private WashingStationMapper washingStationMapper;
 
 
     @Override
@@ -57,51 +69,28 @@ public class AppointmentService implements IAppointmentService {
         return this.findAppointmentById(appointmentId);
     }
 
-
     @Override
-    public List<AppointmentResponse> findTodayAppointments() {
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = start.plusDays(1); // inicio del día siguiente
+    public AppointmentResponse confirmAndSelectWashingStation(Long appointmentId){
 
-        return appointmentRepository.findAllByStartDateTimeBetween(start, end)
-                .stream()
-                .map(appointmentMapper::toResponse)
-                .toList();
+        Appointment appointment = this.findAppointmentToWash(appointmentId);
+
+        List<WashingStation> stations = washingStationService.getAvailableWashingStationOnAppointment(appointment.getStartDateTime(),appointment.getEndDateTime());
+
+        if(stations.isEmpty())
+            throw new RuntimeException("no hay estaciones libres");
+
+        if(stations.contains(appointment.getWashingStation()))
+            return appointmentMapper.toResponse(appointment);
+
+        appointment.setWashingStation(resolveWashingStation(stations));
+
+        return appointmentMapper.toResponse(appointmentRepository.save(appointment));
     }
 
-    @Override
-    public List<AppointmentResponse> findAppointmentsByDate(LocalDate date) {
-        LocalDateTime start = date.atStartOfDay();
-        LocalDateTime end = start.plusDays(1); // Fin del día
 
-        return appointmentRepository.findAllByStartDateTimeBetween(start, end)
-                .stream()
-                .map(appointmentMapper::toResponse)
-                .toList();
-    }
-
-    @Override
-    public List<AppointmentResponse> findCustomerAppointments(String customerDni) {
-
-        return appointmentRepository.findAllByCustomer_Dni(customerDni)
-                .stream()
-                .map(appointmentMapper::toResponse)
-                .toList();
-    }
-
-    @Override
-    public List<AppointmentResponse> findCustomerAppointments(String customerDni, AppointmentStatus appointmentStatus) {
-
-        return appointmentRepository.findAllByCustomer_Dni(customerDni)
-                .stream()
-                .filter(appointment -> appointment.getStatus().equals(appointmentStatus))
-                .map(appointmentMapper::toResponse)
-                .toList();
-    }
 
     @Override
     public AppointmentResponse createAppointment(AppointmentRequest appointmentRequest) {
-
 
         Customer customer = customerService.getCustomerByDni(appointmentRequest.getCustomerDni());
 
@@ -111,14 +100,15 @@ public class AppointmentService implements IAppointmentService {
 
         LocalDateTime startAppointment = appointmentRequest.getDateTime();
         LocalDateTime endAppointment = appointmentRequest.getDateTime().plusMinutes(serviceType.getDurationInMinutes());
-
+        System.out.print("start " + startAppointment + "\n");
+        System.out.print("end " + endAppointment+ "\n");
         if(appointmentRepository.hasAppointmentInRangeByVehiclePlate(vehicle.getPlateNumber(), startAppointment,endAppointment)==1)
             throw new RuntimeException("Este auto ya tiene un turno dentro de este rango horario");
 
-        List<WashingStation> washingStations = this.getAvailableWashingStationOnAppointment(startAppointment, endAppointment);
-
+        List<WashingStation> washingStations = washingStationService.getAvailableWashingStationOnAppointment(startAppointment, endAppointment);
+        System.out.print("WASHINES ESTACIONES: \n") ; washingStations.forEach( wa -> System.out.print(wa.toString() + "\n"));
         WashingStation selectedStation = this.resolveWashingStation(appointmentRequest.getWashingStationId(), washingStations);
-
+        System.out.print("wasghin selected : " + selectedStation);
         serviceTypeService.validateVehicleTypeCompatibility(serviceType, vehicle.getVehicleType());
 
 
@@ -131,7 +121,8 @@ public class AppointmentService implements IAppointmentService {
                 selectedStation,
                 vehicle
         );
-
+        if(appointmentRequest.getPromotion()!=null)
+            this.applyPromotion(appointmentRequest.getPromotion(), appointment);
         return appointmentMapper.toResponse(appointmentRepository.save(appointment));
     }
 
@@ -143,7 +134,8 @@ public class AppointmentService implements IAppointmentService {
         LocalDateTime startAppointment = appointmentRequest.getDateTime();
         LocalDateTime endAppointment = appointmentRequest.getDateTime().plusMinutes(serviceType.getDurationInMinutes());
 
-        List<WashingStation> stations = this.getAvailableWashingStationOnAppointment(startAppointment, endAppointment);
+
+        List<WashingStation> stations = washingStationService.getAvailableWashingStationOnAppointment(startAppointment, endAppointment); // descomentar la linea que hace que los turnos deban estar pagados
 
         WashingStation selectedStation = this.resolveWashingStation(appointmentRequest.getWashingStation(), stations);
 
@@ -157,7 +149,7 @@ public class AppointmentService implements IAppointmentService {
 
         if(appointmentRepository.hasAppointmentInRangeByVehiclePlate(vehicle.getPlateNumber(),
                 startAppointment,endAppointment) == 1)
-            throw new RuntimeException("Este auto ya tiene un turno dentro de este rango horario");
+            throw new VehicleAlreadyAnAppointmentException("Este auto ya tiene un turno dentro de este rango horario");
 
 
         Appointment appointment = this.buildAppointment(
@@ -170,16 +162,26 @@ public class AppointmentService implements IAppointmentService {
                 vehicle
         );
 
+        if(appointmentRequest.getPromotion()!=null)
+            this.applyPromotion(appointmentRequest.getPromotion(), appointment);
+
         return appointmentMapper.toResponse(appointmentRepository.save(appointment));
     }
-
+//    private boolean validateAppointmentToPayment(Appointment appointment){
+//        List<WashingStation> washingStations = getAvailableWashingStationOnAppointment(appointment.getStartDateTime(),appointment.getEndDateTime());
+//         if(washingStations.isEmpty())
+//             throw new RuntimeException("No hay estaciones disponibles");
+//         if(washingStations.stream().filter(ws -> ws.getId().equals(appointment.getWashingStation().getId())).toList().isEmpty()){
+//             WashingStation = resolveWashingStation(appointment.getWashingStation().getId(),washingStations);
+//         }
+//    }
 
     @Override
     public void deleteAppointment(Long appointmentId) {
         Appointment appointment = findAppointmentById(appointmentId);
 
         if(!(appointment.getStatus() == AppointmentStatus.CANCELED || appointment.getStatus() == AppointmentStatus.COMPLETED)){
-            throw new RuntimeException("No se puede eliminar turno que no fue cancelado o completado");
+            throw new InvalidTransitionException("No se puede eliminar turno que no fue cancelado o completado");
         }
 
         appointmentRepository.deleteById(appointmentId);
@@ -243,15 +245,53 @@ public class AppointmentService implements IAppointmentService {
         return null;
     }
 
-    public int getWashAmountByDateAndPlantNumber(String plateNumber, int weekRange){
+//    @Override
+//    @Transactional
+//    public AppointmentResponse payAppointment(Long appointmentId){
+//
+//        Appointment appointment = this.findAppointmentToWash(appointmentId);
+//        Long id = appointmentRepository.getAppointmentIdAt(appointment.getStartDateTime());
+//        if( id != null && !id.equals(appointment.getId()))
+//            throw new RuntimeException("Este horario es del turno con id: " + id);//crear excepcion
+//        PaymentResponse paymentResponse = paymentService.doPayment(this.findAppointmentToWash(appointmentId));
+//        AppointmentResponse ap = appointmentMapper.toResponse(appointment);
+//
+//        if(paymentResponse.getPaymentStatus() == PaymentStatus.APPROVED)
+//            this.confirmAppointment(appointmentId);
+//        ap.setPayment(paymentResponse);
+//
+//        return ap;
+//    }
 
-        return appointmentRepository.findByVehicleToWash_PlateNumberAndStartDateTimeAfter(plateNumber,
-                LocalDateTime.now().minusWeeks(weekRange)).stream()
-                .filter(app -> app.getStatus().equals(AppointmentStatus.COMPLETED))
-                .toList().size();
+//    private WashingStation resolveWashingStation(Long washingStationId, Appointment appointment) {
+//
+//        List<WashingStation> stations = this.getAvailableWashingStationOnAppointment(appointment.getStartDateTime(),appointment.getEndDateTime());
+//
+//        if(stations.stream().filter(ws -> ws.getId().equals(appointment.getWashingStation().getId())).toList().isEmpty()){
+//            resolveWashingStation(washingStationId,stations);
+//        }
+//
+//    }
+
+//    @Override
+//    public Long getAppointmentIdAt(LocalDateTime starDateTime) {
+//        return appointmentRepository.getAppointmentIdAt(starDateTime);
+//    }
+
+    private void applyPromotion(Long promotionId, Appointment appointment){
+
+        if(appointment.getCustomer() != null){
+            List<Promotion> promotions = appointment.getCustomer().getPromotions();
+            if(!promotions.stream().anyMatch(p -> p.getId().equals(promotionId))){
+                throw new RuntimeException("Promocion no aplicable a este customer");
+            }
+        }
+
+        BigDecimal finalPrice = promotionService.applyPromotion(promotionId,appointment);
+
+        appointment.getPayment().setAmount(finalPrice);
+
     }
-
-
 
     private Appointment buildAppointment(Customer customer,
                                          PaymentMethod paymentMethod,
@@ -279,6 +319,10 @@ public class AppointmentService implements IAppointmentService {
                 .build();
     }
 
+    private WashingStation resolveWashingStation(List<WashingStation> stations){
+        return pickRandomStation(stations);
+    }
+
     private WashingStation resolveWashingStation(Long washingStationId, List<WashingStation> stations) {
         if (washingStationId == null) {
             return pickRandomStation(stations);
@@ -287,46 +331,41 @@ public class AppointmentService implements IAppointmentService {
         return stations.stream()
                 .filter(s -> s.getId().equals(washingStationId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Specified station not available"));
+                .orElseThrow(() -> new NotAvailableWashingStationException("Specified station not available"));
     }
 
 
     private WashingStation pickRandomStation(List<WashingStation> stations) {
+        if(stations.isEmpty())
+            throw new NotAvailableWashingStationException("No hay estaciones disponibles");
         return stations.get(ThreadLocalRandom.current().nextInt(stations.size()));
     }
 
     private Appointment findAppointmentById(Long id) {
         return appointmentRepository.findById(id).orElseThrow(() ->
-                new RuntimeException("No se encontro appointment con id: " + id));
+                new ResourceNotFoundException("No se encontro appointment con id: " + id));
+    }
+
+    @Override
+    public void validateTransition(AppointmentStatus current, AppointmentStatus next){
+         if(!isValidTransition(current,next))
+                throw new InvalidTransitionException("El turno ya esta confirmado");
     }
 
     private boolean isValidTransition(AppointmentStatus current, AppointmentStatus next) {
         return switch (current) {
-            case CREATED -> Objects.equals(AppointmentStatus.CANCELED, next);
-            case CONFIRMED -> List.of(AppointmentStatus.CREATED, AppointmentStatus.CANCELED).contains(next);
-            case IN_PROGRESS ->
-                    Objects.equals(AppointmentStatus.CONFIRMED, next);//ANALIZAR SI ES POSIBLE CANCEAR Y APLICAR LA LOGICA CORRESPONDIENTE
-            case COMPLETED -> Objects.equals(AppointmentStatus.IN_PROGRESS, next);
-            case CANCELED -> List.of(AppointmentStatus.CONFIRMED, AppointmentStatus.CREATED).contains(next);
+            case CREATED -> List.of(AppointmentStatus.CONFIRMED).contains(next);
+            case CONFIRMED -> List.of( AppointmentStatus.CANCELED,AppointmentStatus.IN_PROGRESS).contains(next);
+            case IN_PROGRESS -> List.of(AppointmentStatus.COMPLETED).contains(next);//ANALIZAR SI ES POSIBLE CANCEAR Y APLICAR LA LOGICA CORRESPONDIENTE
+//            case COMPLETED -> Objects.equals(AppointmentStatus.IN_PROGRESS, next);
+            case CANCELED -> List.of(AppointmentStatus.CONFIRMED).contains(next);
             case NO_SHOW -> Objects.equals(AppointmentStatus.CONFIRMED, next);
             default -> false;
 
         };
     }
 
-    private List<WashingStation> getAvailableWashingStationOnAppointment(
-            LocalDateTime startAppointment, LocalDateTime endAppointment
-    ) {
 
-        List<WashingStation> washingStations = washingStationService.getAvailableStations(startAppointment, endAppointment);
-//                .stream()
-//                .map(washingStationMapper::toWashingStation)
-//                .toList();
-
-        if (washingStations.isEmpty())
-            throw new RuntimeException("there are not available appointments");
-        return washingStations;
-    }
 
     private Vehicle getVehicleFromCustomer(Customer customer, String plateNumber) {
 
@@ -336,21 +375,21 @@ public class AppointmentService implements IAppointmentService {
         vehicles.forEach(ve -> plateNumbers.add(ve.getPlateNumber()));
 
         if (plateNumber == null)
-            throw new RuntimeException("No indico ningun numero de patente");
+            throw new NoIndicatedPlateNumber("No indico ningun numero de patente");
 
         if (vehicles.isEmpty())
-            throw new RuntimeException("El cliente " + customer.getName() + " "
+            throw new CustomerHasNotVehiclesException("El cliente " + customer.getName() + " "
                     + customer.getLastName() + " No tiene vehiculos registrados");
 
         if (!plateNumbers.contains(plateNumber))
-            throw new RuntimeException("La patente: " + plateNumber + "no corresponde a los vehiculos registrados del cliente"
+            throw new CustomerVehicleNotFoundException("La patente: " + plateNumber + "no corresponde a los vehiculos registrados del cliente"
                     + customer.getName() + " " + customer.getLastName());
 
 
         return vehicles.stream()
                 .filter(ve -> ve.getPlateNumber().equals(plateNumber))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No se encontro patente: " + plateNumber +
+                .orElseThrow(() -> new CustomerVehicleNotFoundException("No se encontro patente: " + plateNumber +
                         " relacionada con el cliente: " + customer.getName() +
                         " " + customer.getLastName()));
 
@@ -359,7 +398,8 @@ public class AppointmentService implements IAppointmentService {
     private Appointment setAppointmentStatus(Long appointmentId, AppointmentStatus status){
         Appointment appointment = findAppointmentById(appointmentId);
         if(!isValidTransition(appointment.getStatus(),status))
-            throw new RuntimeException("Is not valid transition");
+            throw new InvalidTransitionException("Is not valid transition from "
+                    + appointment.getStatus() + " to " +status);
         appointment.setStatus(status);
         return appointmentRepository.save(appointment);
     }

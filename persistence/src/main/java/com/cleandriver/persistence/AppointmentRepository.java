@@ -34,6 +34,28 @@ List<Appointment> findAllByStartDateTimeBetween(LocalDateTime start, LocalDateTi
             LocalDateTime after
     );
 
+    @Query(value = "SELECT * FROM appointment AS ap" +
+            "JOIN vehicle AS ve ON ap.vehicle_id = ve.vehicle_id" +
+            "WHERE ap.appointment_status = :status" +
+            "AND ve.plate_number = :plateNumber" +
+            "AND ap.star_date_time = :after",
+            nativeQuery = true
+
+    )
+    List<Appointment> findAppointmentsToPlateNumbersAndStartDateTime(
+            @Param("plateNumber") String plateNumber,
+            @Param("status") AppointmentStatus status,
+            @Param("after") LocalDateTime after
+    );
+
+
+    @Query(value = "SELECT a.appointment_id FROM appointment AS a WHERE " +
+//            "JOIN vehicle AS ve ON a.vehicle_id = ve.vehicle_id " +
+//            "WHERE ve.plate_number = :plateNumber AND " +
+            "a.start_date_time = :start", nativeQuery = true)
+    Long getAppointmentIdAt(@Param("start") LocalDateTime start);
+//                            @Param("plateNumber") String plateNumber);
+
     @Query(value = "SELECT " +
                 "CASE " +
                     "WHEN COUNT(*) > 0 THEN true " +

@@ -1,15 +1,13 @@
-package com.cleandriver.service.interfaces;
+package com.cleandriver.service.interfaces.appointment;
 
 import com.cleandriver.dto.appointment.AppointmentRequest;
 import com.cleandriver.dto.appointment.AppointmentResponse;
 import com.cleandriver.dto.appointment.ExpressAppointmentRequest;
 import com.cleandriver.model.Appointment;
+import com.cleandriver.model.WashingStation;
 import com.cleandriver.model.enums.AppointmentStatus;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface IAppointmentService {
 
@@ -18,13 +16,7 @@ public interface IAppointmentService {
 
     Appointment findAppointmentToWash(Long appointmentId);
 
-    List<AppointmentResponse> findTodayAppointments();
-
-    List<AppointmentResponse> findAppointmentsByDate(LocalDate date);
-
-    List<AppointmentResponse> findCustomerAppointments(String customerDni);
-
-    List<AppointmentResponse> findCustomerAppointments(String customerDni, AppointmentStatus appointmentStatus);
+    AppointmentResponse confirmAndSelectWashingStation(Long appointmentId);
 
     AppointmentResponse createAppointment(AppointmentRequest appointmentRequest);
 
@@ -40,10 +32,15 @@ public interface IAppointmentService {
 
     void finishAppointment(Long appointmentId);
 
+//    void isValidTransition();
+
     AppointmentResponse updateAppointment(Long appointmentId,AppointmentRequest appointmentRequest);
+
+    void validateTransition(AppointmentStatus current, AppointmentStatus next);
 
 //    int amountWashByCarAndTime(String plateNumber, LocalDateTime time);
 
-    int getWashAmountByDateAndPlantNumber(String plateNumber, int weekRange);
-    
+//    AppointmentResponse payAppointment(Long appointmentId);
+//    Long getAppointmentIdAt(LocalDateTime starDateTime);
+
 }

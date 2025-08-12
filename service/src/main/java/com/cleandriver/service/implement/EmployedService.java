@@ -2,14 +2,16 @@ package com.cleandriver.service.implement;
 
 import com.cleandriver.dto.employed.EmployedRequest;
 import com.cleandriver.dto.employed.EmployedResponse;
+import com.cleandriver.exception.generalExceptions.ResourceNotFoundException;
 import com.cleandriver.mapper.EmployedMapper;
 import com.cleandriver.model.Employed;
 import com.cleandriver.persistence.EmployedRepository;
 import com.cleandriver.service.interfaces.IEmployedService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -22,12 +24,19 @@ public class EmployedService implements IEmployedService {
     @Autowired
     private EmployedMapper employedMapper;
 
+    @Transactional
+    @Override
+    public void activateEmployed(Long employedId, boolean active) {
+       employedRepository.updateIsActiveById(employedId,active);
+    }
+
+
     @Override
     public EmployedResponse createEmployed(EmployedRequest employedRequest) {
 
         Employed employed = employedMapper.toEmployed(employedRequest);
 
-        employed.setCreatedAt(LocalDateTime.now());
+        employed.setCreatedAt(LocalDate.now());
 
         return employedMapper.toEmployedResponse(employedRepository.save(employed));
     }
@@ -42,7 +51,7 @@ public class EmployedService implements IEmployedService {
 
         Employed employed = this.findEmployedBy(employedId);
         if(!employed.isActive())
-            throw new RuntimeException("El empleado no esta activo");
+            throw new ResourceNotFoundException("El empleado no esta activo");
 
         return employed;
     }
@@ -87,13 +96,13 @@ public class EmployedService implements IEmployedService {
 
     private Employed findEmployedBy(Long id){
         return employedRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("No se encontro el epleado con id: " + id)
+                () -> new ResourceNotFoundException("No se encontro el epleado con id: " + id)
         );
     }
 
     private Employed findEmployedBy(String employedDni){
         return employedRepository.findByDni(employedDni).orElseThrow(
-                () -> new RuntimeException("No se encontro empleado con id: " + employedDni)
+                () -> new ResourceNotFoundException("No se encontro empleado con id: " + employedDni)
         );
     }
 

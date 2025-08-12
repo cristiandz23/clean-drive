@@ -36,14 +36,17 @@ public class Promotion {
 
     private LocalDateTime createdAt;
 
-//    private String promotionCode;
+    @Column(name = "only_customer" , nullable = false)
+    private boolean onlyCustomer;
+
+    @Column(nullable = false)
+    private double discount;
 
 
     public boolean isActive() {
         getStartDate().isBefore(this.getEndDate());
         return getStartDate().isBefore(this.getEndDate());
     }
-
 
 
 }

@@ -9,6 +9,9 @@ import java.util.List;
 public interface IEmployedService {
 
 
+    void activateEmployed(Long employedId,boolean active);
+
+
     EmployedResponse createEmployed(EmployedRequest employedRequest);
 
     EmployedResponse findEmployed(Long employedId);

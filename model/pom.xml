@@ -15,8 +15,6 @@
 
 	<properties>
 		<version.lombok>1.18.30</version.lombok>
-<!--		<version.mapstruct>1.6.3</version.mapstruct>-->
-<!--		<version.mapstruct-lombok>0.2.0</version.mapstruct-lombok>-->
 	</properties>
 	<dependencies>
 		<dependency>
@@ -25,16 +23,6 @@
 			<version>${version.lombok}</version>
 			<optional>true</optional>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.mapstruct</groupId>-->
-<!--			<artifactId>mapstruct</artifactId>-->
-<!--			<version>${version.mapstruct}</version>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.projectlombok</groupId>-->
-<!--			<artifactId>lombok-mapstruct-binding</artifactId>-->
-<!--			<version>${version.mapstruct-lombok}</version>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>jakarta.validation</groupId>
 			<artifactId>jakarta.validation-api</artifactId>

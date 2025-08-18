@@ -12,10 +12,12 @@ public interface IAppointmentStatsService {
 
     List<AppointmentResponse> findTodayAppointments();
 
-    List<AppointmentResponse> findAppointmentsByDate(LocalDate date);
+    List<AppointmentResponse> getAppointmentsByDate(LocalDate date);
 
-    List<AppointmentResponse> findCustomerAppointments(String customerDni);
+    List<AppointmentResponse> getAppointmentByPlateNumber(String plateNumber);
 
-    List<AppointmentResponse> findCustomerAppointments(String customerDni, AppointmentStatus appointmentStatus);
+    List<AppointmentResponse> getAppointmentByCustomer(String customerDni);
+
+    List<AppointmentResponse> getAppointmentByCustomer(String customerDni, AppointmentStatus appointmentStatus);
 
 }

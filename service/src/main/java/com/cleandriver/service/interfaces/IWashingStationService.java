@@ -30,7 +30,7 @@ public interface IWashingStationService {
 
     WashingStationDto createWashingStation(WashingStationDto serviceType);
 
-    WashingStation resolverWashingStation(Long washingStationId, Appointment appointment);
+    WashingStation resolverWashingStationToWash(Appointment appointment);
 
     List<WashingStation> getAvailableWashingStationOnAppointment(LocalDateTime startAppointment, LocalDateTime endAppointment);
 }

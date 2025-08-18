@@ -1,8 +1,6 @@
 package com.controller;
 
-import com.cleandriver.dto.serviceType.ServiceTypeDto;
 import com.cleandriver.dto.washingstation.WashingStationDto;
-import com.cleandriver.service.interfaces.IServiceTypeService;
 import com.cleandriver.service.interfaces.IWashingStationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

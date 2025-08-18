@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 
 @NoArgsConstructor
@@ -35,5 +36,19 @@ public class Payment {
     private LocalDateTime createdAt;
 
     private Long walletPaymentId;
+
+
+    @PrePersist
+    @PreUpdate
+    public void truncateDate() {
+        if (createdAt != null) {
+            createdAt = createdAt.truncatedTo(ChronoUnit.MINUTES);
+        }
+        if (paymentDate != null) {
+            paymentDate = paymentDate.truncatedTo(ChronoUnit.MINUTES);
+        }
+
+    }
+
 
 }

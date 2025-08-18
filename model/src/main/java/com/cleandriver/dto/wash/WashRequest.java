@@ -15,8 +15,8 @@ public class WashRequest {
     @NotNull @Positive
     private Long appointmentId;
 
-    @NotNull @Positive
-    private Long washingStationId;
+//    @NotNull @Positive
+//    private Long washingStationId;
 
     @NotNull @Positive
     private Long employedId;

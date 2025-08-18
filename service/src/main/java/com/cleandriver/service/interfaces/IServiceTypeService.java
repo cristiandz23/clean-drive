@@ -4,6 +4,8 @@ import com.cleandriver.dto.serviceType.ServiceTypeDto;
 import com.cleandriver.model.ServiceType;
 import com.cleandriver.model.enums.VehicleType;
 
+import java.util.List;
+
 public interface IServiceTypeService {
 
     ServiceTypeDto createServiceType(ServiceTypeDto serviceTypeDto);
@@ -12,4 +14,7 @@ public interface IServiceTypeService {
 
     ServiceType getServiceType(Long serviceTypeId);
 
+    List<ServiceTypeDto> getServices();
+
+    void deleteServiceType(Long id);
 }

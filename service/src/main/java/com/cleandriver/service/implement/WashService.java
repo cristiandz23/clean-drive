@@ -17,9 +17,12 @@ import com.cleandriver.service.interfaces.IWashService;
 import com.cleandriver.service.interfaces.IWashingStationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class WashService implements IWashService {
@@ -50,13 +53,23 @@ public class WashService implements IWashService {
 
         Appointment appointment = appointmentService.findAppointmentToWash(washRequest.getAppointmentId());
 
-        WashingStation washingStation = washingStationService.resolverWashingStation(washRequest.getWashingStationId(),appointment);
+        if(washRepository.isVehicleBeingWashed(appointment.getVehicleToWash().getPlateNumber()))
+            throw new RuntimeException("Este vehiculo ya esta siedo lavado");
+
+        WashingStation washingStation = washingStationService.resolverWashingStationToWash(appointment);
 
         Employed employed = employedService.findEmployedToWash(washRequest.getEmployedId());
 
         appointmentService.initAppointment(appointment.getId());
 
         washingStationService.takeUpStation(washingStation.getId());
+
+        LocalDateTime newStartAppointment = LocalDateTime.now();
+        LocalDateTime newEndAppointment = LocalDateTime.now().plusMinutes(appointment.getServiceType().getDurationInMinutes());
+
+        appointment.setStartDateTime(newStartAppointment);
+        appointment.setEndDateTime(newEndAppointment);
+        appointment.setWashingStation(washingStation);
 
         Wash wash = Wash.builder()
                 .washingStation(washingStation)
@@ -100,6 +113,39 @@ public class WashService implements IWashService {
         wash.setStatus(WashStatus.CANCELED);
 
         return washMapper.toResponse(washRepository.save(wash));
+    }
+
+    @Override
+    public List<WashResponse> getCurrentWashes() {
+        return washRepository.getCurrentWashes().stream()
+                .map(washMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<WashResponse> getWashToday() {
+        return washRepository.getWashesToday()
+                .stream()
+                .map(washMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<WashResponse> getWashByDate(LocalDate initAt) {
+        return washRepository.getWashesFromDay(initAt)
+                .stream()
+                .map(washMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<WashResponse> getWashByDate(LocalDate from, LocalDate until) {
+        if(from.isAfter(until))
+            throw new RuntimeException("bad request, envio un periodo incorrecto");
+        return washRepository.getWashesByPeriod(from,until)
+                .stream()
+                .map(washMapper::toResponse)
+                .toList();
     }
 
     private Wash findWash(Long washId){

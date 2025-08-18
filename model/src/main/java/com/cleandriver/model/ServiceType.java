@@ -22,6 +22,7 @@ public class ServiceType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "service_type_id")
     private Long id;
+
     @Column(unique = true,nullable = false)
     private String name;
 
@@ -38,6 +39,8 @@ public class ServiceType {
     private List<VehicleType> vehicleType;
 
     private LocalDate createdAt;
+
+
 
 }
 

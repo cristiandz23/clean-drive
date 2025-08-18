@@ -32,7 +32,7 @@ public interface WashingStationRepository extends JpaRepository<WashingStation,L
             "WHERE ws.washing_station_id NOT IN (" +
             "  SELECT a.washing_station_id FROM appointment AS a " +
             "  WHERE a.start_date_time < :end AND a.end_date_time > :start " +
-            "    AND a.appointment_status NOT IN ('COMPLETED', 'CANCELED','NO_SHOW','CREATED')" +
+            "  AND a.appointment_status NOT IN ('COMPLETED', 'CANCELED','NO_SHOW','CREATED')" +
             ")", nativeQuery = true)
     List<WashingStation> findAvailableStations(@Param("start") LocalDateTime start,
                                                @Param("end") LocalDateTime end);

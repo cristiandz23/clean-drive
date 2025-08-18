@@ -1,7 +1,6 @@
 package com.controller;
 
 
-import com.cleandriver.dto.employed.EmployedResponse;
 import com.cleandriver.service.interfaces.appointment.IAppointmentPaymentIntegrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

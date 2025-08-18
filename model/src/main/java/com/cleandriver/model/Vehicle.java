@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -43,5 +44,6 @@ public class Vehicle {
     private Customer customer;
 
     private LocalDate createdAt;
+
 
 }

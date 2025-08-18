@@ -28,17 +28,16 @@ public class AppointmentStatsService implements IAppointmentStatsService {
 
     @Override
     public List<AppointmentResponse> findTodayAppointments() {
-        LocalDateTime start = LocalDate.now().atStartOfDay();
-        LocalDateTime end = start.plusDays(1); // inicio del día siguiente
 
-        return appointmentRepository.findAllByStartDateTimeBetween(start, end)
+        return appointmentRepository.findAllOfToday()
                 .stream()
                 .map(appointmentMapper::toResponse)
                 .toList();
     }
 
     @Override
-    public List<AppointmentResponse> findAppointmentsByDate(LocalDate date) {
+    public List<AppointmentResponse> getAppointmentsByDate(LocalDate date) {
+
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = start.plusDays(1); // Fin del día
 
@@ -49,18 +48,27 @@ public class AppointmentStatsService implements IAppointmentStatsService {
     }
 
     @Override
-    public List<AppointmentResponse> findCustomerAppointments(String customerDni) {
-
-        return appointmentRepository.findAllByCustomer_Dni(customerDni)
+    public List<AppointmentResponse> getAppointmentByPlateNumber(String plateNumber) {
+        System.out.print("dni" + plateNumber);
+        return appointmentRepository.findAppointmentByPlateNumber(plateNumber)
                 .stream()
                 .map(appointmentMapper::toResponse)
                 .toList();
     }
 
     @Override
-    public List<AppointmentResponse> findCustomerAppointments(String customerDni, AppointmentStatus appointmentStatus) {
+    public List<AppointmentResponse> getAppointmentByCustomer(String customerDni) {
+        System.out.print("dni" + customerDni);
+        return appointmentRepository.findAppointmentByCustomer(customerDni)
+                .stream()
+                .map(appointmentMapper::toResponse)
+                .toList();
+    }
 
-        return appointmentRepository.findAllByCustomer_Dni(customerDni)
+    @Override
+    public List<AppointmentResponse> getAppointmentByCustomer(String customerDni, AppointmentStatus appointmentStatus) {
+
+        return appointmentRepository.findAppointmentByCustomer(customerDni)
                 .stream()
                 .filter(appointment -> appointment.getStatus().equals(appointmentStatus))
                 .map(appointmentMapper::toResponse)

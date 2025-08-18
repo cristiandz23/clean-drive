@@ -32,15 +32,11 @@ public interface IAppointmentService {
 
     void finishAppointment(Long appointmentId);
 
-//    void isValidTransition();
 
     AppointmentResponse updateAppointment(Long appointmentId,AppointmentRequest appointmentRequest);
 
     void validateTransition(AppointmentStatus current, AppointmentStatus next);
 
-//    int amountWashByCarAndTime(String plateNumber, LocalDateTime time);
-
-//    AppointmentResponse payAppointment(Long appointmentId);
-//    Long getAppointmentIdAt(LocalDateTime starDateTime);
+//    boolean existsAppointmentWithServiceType(Long serviceTypeId);
 
 }

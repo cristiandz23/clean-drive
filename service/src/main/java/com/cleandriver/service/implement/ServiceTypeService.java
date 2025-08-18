@@ -8,10 +8,12 @@ import com.cleandriver.model.ServiceType;
 import com.cleandriver.model.enums.VehicleType;
 import com.cleandriver.persistence.ServiceTypeRepository;
 import com.cleandriver.service.interfaces.IServiceTypeService;
+import com.cleandriver.service.interfaces.appointment.IAppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class ServiceTypeService implements IServiceTypeService {
@@ -20,7 +22,10 @@ public class ServiceTypeService implements IServiceTypeService {
     private ServiceTypeRepository serviceTypeRepository;
 
     @Autowired
-    ServiceTypeMapper serviceTypeMapper;
+    private ServiceTypeMapper serviceTypeMapper;
+
+    @Autowired
+    private IAppointmentService appointmentService;
 
     @Override
     public ServiceTypeDto createServiceType(ServiceTypeDto serviceTypeDto) {
@@ -30,7 +35,7 @@ public class ServiceTypeService implements IServiceTypeService {
 
         return serviceTypeMapper.toServiceTypeDto(serviceTypeRepository.save(service));
     }
-
+    @Override
     public void validateVehicleTypeCompatibility(ServiceType serviceType, VehicleType vehicleType) {
         if (!serviceType.getVehicleType().contains(vehicleType)) {
             throw new IncompatibleServiceTypeException("Vehicle type " + vehicleType +" not compatible with service " +serviceType );
@@ -43,6 +48,30 @@ public class ServiceTypeService implements IServiceTypeService {
                 () -> new ResourceNotFoundException("no se encontro service type con id " + serviceTypeId)
         );
 
+    }
+
+    @Override
+    public List<ServiceTypeDto> getServices() {
+        return serviceTypeRepository.findAll()
+                .stream()
+                .map(serviceTypeMapper::toServiceTypeDto)
+                .toList();
+    }
+
+    @Override
+    public void deleteServiceType(Long id) {
+
+        ServiceType serviceType = this.findServiceType(id);
+
+//        if (appointmentService.existsAppointmentWithServiceType(serviceType.getId()))
+//            throw new RuntimeException("No se puede eliminar porque hay turnos activos con este tipo de servicio");
+        serviceTypeRepository.delete(serviceType);
+    }
+
+    private ServiceType findServiceType(Long id){
+        return serviceTypeRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("No se econtro el tipo de servicio id: " + id)
+        );
     }
 
 }

@@ -51,14 +51,19 @@ public class WashingStationService implements IWashingStationService {
             throw new NotAvailableWashingStationException("No hay estacines cargadas en la base de datos");
 
         List<WashingStation> washingStations = washingStationRepository.findAvailableStations(startAppointment,endAppointment); // descomentar la linea que hace que los turnos deban estar pagados
+
         if(washingStations.isEmpty())
+
             throw new NotAvailableWashingStationException("No hay washing stations disponibles en el rango horario");
+
         return washingStations;
     }
 
     @Override
     public void takeUpStation(Long stationId) {
         WashingStation washingStation = this.findWashingStation(stationId);
+        if(washingStation.isBusy())
+            throw new RuntimeException("La estacion esta ocupada");
         washingStation.setBusy(true);
         washingStationRepository.save(washingStation);
     }
@@ -88,21 +93,26 @@ public class WashingStationService implements IWashingStationService {
     }
 
     @Override
-    public WashingStation resolverWashingStation(Long washingStationId, Appointment appointment){
+    public WashingStation resolverWashingStationToWash(Appointment appointment){
 
-        WashingStation washingStation = this.findWashingStation(washingStationId);
+        WashingStation washingStation = this.findWashingStation(appointment.getWashingStation().getId());
+
+        int appointmentDuration = appointment.getServiceType().getDurationInMinutes();
 
         List<WashingStation> washingStations = this.getAvailableStations(LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(appointment.getServiceType().getDurationInMinutes()));
-
+                LocalDateTime.now().plusMinutes(appointmentDuration));
 
         if(washingStations.isEmpty())
             throw new NotAvailableWashingStationException("No hay estaciones de lavado disponibles");
 
+        washingStations = washingStations.stream().filter( w -> !w.isBusy()).toList();
+
+        if(washingStations.isEmpty())
+            throw new NotAvailableWashingStationException("Hay disponibles pero estan marcadas como ocupadas");
+
+
         if(washingStations.contains(washingStation))
             return washingStation;
-        if(washingStations.stream().filter( w -> !w.isBusy()).toList().isEmpty())
-            throw new NotAvailableWashingStationException("Hay disponibles pero estan marcadas como ocupadas");
 
         return washingStations.getFirst();
 

@@ -92,6 +92,9 @@ public class AppointmentService implements IAppointmentService {
     @Override
     public AppointmentResponse createAppointment(AppointmentRequest appointmentRequest) {
 
+        if(appointmentRequest.getDateTime().isBefore(LocalDateTime.now()))
+            throw new RuntimeException("bad request la fecha es pasada");
+
         Customer customer = customerService.getCustomerByDni(appointmentRequest.getCustomerDni());
 
         Vehicle vehicle = this.getVehicleFromCustomer(customer, appointmentRequest.getPlateNumber());
@@ -100,15 +103,14 @@ public class AppointmentService implements IAppointmentService {
 
         LocalDateTime startAppointment = appointmentRequest.getDateTime();
         LocalDateTime endAppointment = appointmentRequest.getDateTime().plusMinutes(serviceType.getDurationInMinutes());
-        System.out.print("start " + startAppointment + "\n");
-        System.out.print("end " + endAppointment+ "\n");
+
         if(appointmentRepository.hasAppointmentInRangeByVehiclePlate(vehicle.getPlateNumber(), startAppointment,endAppointment)==1)
             throw new RuntimeException("Este auto ya tiene un turno dentro de este rango horario");
 
         List<WashingStation> washingStations = washingStationService.getAvailableWashingStationOnAppointment(startAppointment, endAppointment);
-        System.out.print("WASHINES ESTACIONES: \n") ; washingStations.forEach( wa -> System.out.print(wa.toString() + "\n"));
+
         WashingStation selectedStation = this.resolveWashingStation(appointmentRequest.getWashingStationId(), washingStations);
-        System.out.print("wasghin selected : " + selectedStation);
+
         serviceTypeService.validateVehicleTypeCompatibility(serviceType, vehicle.getVehicleType());
 
 
@@ -128,6 +130,9 @@ public class AppointmentService implements IAppointmentService {
 
     @Override
     public AppointmentResponse createExpressAppointment(ExpressAppointmentRequest appointmentRequest) {
+
+        if(appointmentRequest.getDateTime().isBefore(LocalDateTime.now()))
+            throw new RuntimeException("bad request la fecha es pasada");
 
         ServiceType serviceType = serviceTypeService.getServiceType(appointmentRequest.getServiceType());
 
@@ -352,11 +357,16 @@ public class AppointmentService implements IAppointmentService {
                 throw new InvalidTransitionException("El turno ya esta confirmado");
     }
 
+//    @Override
+//    public boolean existsAppointmentWithServiceType(Long serviceTypeId) {
+//        return appointmentRepository.existsAppointmentWithServiceType(serviceTypeId);
+//    }
+
     private boolean isValidTransition(AppointmentStatus current, AppointmentStatus next) {
         return switch (current) {
             case CREATED -> List.of(AppointmentStatus.CONFIRMED).contains(next);
             case CONFIRMED -> List.of( AppointmentStatus.CANCELED,AppointmentStatus.IN_PROGRESS).contains(next);
-            case IN_PROGRESS -> List.of(AppointmentStatus.COMPLETED).contains(next);//ANALIZAR SI ES POSIBLE CANCEAR Y APLICAR LA LOGICA CORRESPONDIENTE
+            case IN_PROGRESS -> List.of(AppointmentStatus.COMPLETED,AppointmentStatus.CANCELED).contains(next);//ANALIZAR SI ES POSIBLE CANCEAR Y APLICAR LA LOGICA CORRESPONDIENTE
 //            case COMPLETED -> Objects.equals(AppointmentStatus.IN_PROGRESS, next);
             case CANCELED -> List.of(AppointmentStatus.CONFIRMED).contains(next);
             case NO_SHOW -> Objects.equals(AppointmentStatus.CONFIRMED, next);
@@ -364,7 +374,6 @@ public class AppointmentService implements IAppointmentService {
 
         };
     }
-
 
 
     private Vehicle getVehicleFromCustomer(Customer customer, String plateNumber) {

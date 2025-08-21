@@ -23,6 +23,27 @@ public class WashingStationService implements IWashingStationService {
     private WashingStationRepository washingStationRepository;
 
     @Override
+    public WashingStationDto updateWashingStation(Long washingStationId, WashingStationDto washingStation) {
+
+        WashingStation washing = this.findWashingStation(washingStationId);
+
+
+        washingStationMapper.toUpdate(washingStation,washing);
+
+
+        return null;
+    }
+
+    @Override
+    public void deleteWashingStation(Long washingStationId) {
+
+        WashingStation washingStation = this.findWashingStation(washingStationId);
+        if(washingStationRepository.isInProcess(washingStationId))
+            throw new RuntimeException("No se puede eliminar porque esta en un lavado en proceso");
+        washingStationRepository.delete(washingStation);
+    }
+
+    @Override
     public WashingStationDto findWashingStationDto(Long id) {
         return washingStationMapper.toDto(findWashingStation(id));
     }
@@ -32,10 +53,6 @@ public class WashingStationService implements IWashingStationService {
         return List.of();
     }
 
-//    @Override
-//    public List<WashingStationResponse> findWashingStationWhitAppointment(LocalDateTime start, LocalDateTime end) {
-//        return List.of();
-//    }
 
     @Override
     public List<WashingStationDto> getAvailableStationsDto(LocalDateTime startAppointment, LocalDateTime endAppointment) {

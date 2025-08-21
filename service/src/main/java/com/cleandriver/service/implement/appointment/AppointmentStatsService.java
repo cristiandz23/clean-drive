@@ -20,9 +20,24 @@ public class AppointmentStatsService implements IAppointmentStatsService {
     private AppointmentMapper appointmentMapper;
 
     @Override
-    public int getWashAmountByDateAndPlantNumber(String plateNumber, int weekRange) {
-        return appointmentRepository.findAppointmentsToPlateNumbersAndStartDateTime(plateNumber,AppointmentStatus.COMPLETED,
-                        LocalDateTime.now().minusWeeks(weekRange)).stream()
+    public int getCompletedAppointmentsByPlateAndDateRange(String plateNumber, int weekRange,
+                                                           LocalDateTime startDate,Long appointmentPromotionId) {
+        return appointmentRepository.findCompletedAppointmentsByPlateAndDateRange(plateNumber,
+                        startDate,startDate.plusWeeks(weekRange),
+                        appointmentPromotionId)
+                .stream()
+                .toList().size();
+    }
+
+    @Override
+    public int getCompletedAppointmentsByPlateAndDateRangeAndService(String plateNumber, int weekRange, LocalDateTime startDate, Long appointmentPromotionId, Long serviceType) {
+        return appointmentRepository.findCompletedAppointmentsByPlateAndDateRange(
+                        plateNumber,
+                        startDate,
+                        startDate.plusWeeks(weekRange),
+                        appointmentPromotionId)
+                .stream()
+                .filter( ap -> ap.getServiceType().getId().equals(serviceType))
                 .toList().size();
     }
 
@@ -73,6 +88,11 @@ public class AppointmentStatsService implements IAppointmentStatsService {
                 .filter(appointment -> appointment.getStatus().equals(appointmentStatus))
                 .map(appointmentMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public boolean existsAppointmentWithServiceType(Long serviceTypeId) {
+        return appointmentRepository.existsAppointmentWithServiceType(serviceTypeId);
     }
 
 }

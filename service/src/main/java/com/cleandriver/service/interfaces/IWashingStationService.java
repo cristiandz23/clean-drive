@@ -12,6 +12,8 @@ import java.util.List;
 public interface IWashingStationService {
 
 
+    WashingStationDto updateWashingStation(Long washingStationId, WashingStationDto washingStation);
+    void deleteWashingStation(Long washingStationId);
     WashingStationDto findWashingStationDto(Long id);
 
     WashingStation findWashingStation(Long id);

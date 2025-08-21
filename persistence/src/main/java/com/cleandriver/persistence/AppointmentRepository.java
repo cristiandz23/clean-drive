@@ -49,18 +49,34 @@ public interface AppointmentRepository extends JpaRepository<Appointment,Long> {
             LocalDateTime after
     );
 
-    @Query(value = "SELECT * FROM appointment AS ap" +
-            "JOIN vehicle AS ve ON ap.vehicle_id = ve.vehicle_id" +
-            "WHERE ap.appointment_status = :status" +
-            "AND ve.plate_number = :plateNumber" +
-            "AND ap.star_date_time = :after",
-            nativeQuery = true
+//    @Query(value = "SELECT * FROM appointment AS ap" +
+//            "JOIN vehicle AS ve ON ap.vehicle_id = ve.vehicle_id" +
+//            "WHERE ap.appointment_status = :status" +
+//            "AND ve.plate_number = :plateNumber" +
+//            "AND ap.start_date_time = :after",
+//            nativeQuery = true
+//
+//    )
+//    List<Appointment> findAppointmentsToPlateNumbersAndStartDateTime(
+//            @Param("plateNumber") String plateNumber,
+//            @Param("status") AppointmentStatus status,
+//            @Param("after") LocalDateTime after
+//    );
+    @Query(value = "SELECT ap.* FROM appointment ap " +
+            "JOIN appointment_promotion app ON ap.appointment_id = app.appointment_id" +
+            "JOIN vehicle ve ON ap.vehicle_id = ve.vehicle_id " +
+            "WHERE ap.appointment_status = 'COMPLETED' " +
+            "AND ve.plate_number = :plateNumber " +
+            "AND ap.start_date_time BETWEEN :startDate AND :endDate" +
+//            "AND ap.promotion_service_id = :appointmentPromotionId" +
+            "AND app.promotion_service_id = :promotionId",
 
-    )
-    List<Appointment> findAppointmentsToPlateNumbersAndStartDateTime(
+            nativeQuery = true)
+    List<Appointment> findCompletedAppointmentsByPlateAndDateRange(
             @Param("plateNumber") String plateNumber,
-            @Param("status") AppointmentStatus status,
-            @Param("after") LocalDateTime after
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("promotionId") Long promotionId
     );
 
 
@@ -90,9 +106,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment,Long> {
     //SI DEVUELVE 1 ESE AUTO YA TIENE UN TURNO EN ESE RANGO HORARIO, SI DEVULUELVE 0 ESE AUTO NO TIENE TURNOS
     //EN ESE RANGO HORARIO Y PUEDE TOMAR UN TURNO
 
-//    @Query(value = "SELECT COUNT(ap) > FROM A ppointment ap " +
+//    @Query("SELECT CASE WHEN EXISTS (" +
+//            "SELECT ap FROM appointment ap " +
 //            "WHERE ap.serviceType.id = :serviceId " +
-//            "AND ap.status IN ('CONFIRMED','CREATED') ")
+//            "AND ap.status IN ('CONFIRMED','CREATED')) " +
+//            "THEN true ELSE false END")
 //    boolean existsAppointmentWithServiceType(@Param("serviceId") Long serviceId);
 
+
+    @Query("SELECT COUNT(ap)>0 FROM appointment ap " +
+            "WHERE ap.serviceType.id = :serviceId " +
+            "AND ap.status IN ('CONFIRMED','CREATED') ")
+    boolean existsAppointmentWithServiceType(@Param("serviceId") Long serviceId);
 }

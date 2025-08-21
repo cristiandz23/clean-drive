@@ -37,6 +37,5 @@ public interface IAppointmentService {
 
     void validateTransition(AppointmentStatus current, AppointmentStatus next);
 
-//    boolean existsAppointmentWithServiceType(Long serviceTypeId);
 
 }

@@ -17,4 +17,8 @@ public interface IServiceTypeService {
     List<ServiceTypeDto> getServices();
 
     void deleteServiceType(Long id);
+
+    void enableServiceType(Long id);
+
+    void disableServiceType(Long id);
 }

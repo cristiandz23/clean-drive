@@ -1,6 +1,7 @@
 package com.cleandriver.model;
 
 import com.cleandriver.model.enums.AppointmentStatus;
+import com.cleandriver.model.promotions.AppointmentPromotion;
 import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
@@ -43,7 +44,7 @@ public class Appointment {
     private Customer customer;
 
     @ManyToOne
-    @JoinColumn(name = "washing_station_id", nullable = false)
+    @JoinColumn(name = "washing_station_id")//, nullable = false
     private WashingStation washingStation;
 
     @ManyToOne(optional = false,cascade = CascadeType.PERSIST)

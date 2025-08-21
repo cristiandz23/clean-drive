@@ -40,7 +40,7 @@ public class ServiceType {
 
     private LocalDate createdAt;
 
-
+    private boolean isAvailable;
 
 }
 

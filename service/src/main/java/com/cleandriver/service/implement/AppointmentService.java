@@ -15,10 +15,10 @@ import com.cleandriver.model.*;
 import com.cleandriver.model.enums.AppointmentStatus;
 import com.cleandriver.model.enums.PaymentMethod;
 import com.cleandriver.model.enums.PaymentStatus;
-import com.cleandriver.model.promotions.Promotion;
 import com.cleandriver.persistence.AppointmentRepository;
 import com.cleandriver.service.interfaces.*;
 import com.cleandriver.service.interfaces.appointment.IAppointmentService;
+import com.cleandriver.service.interfaces.promotion.IPromotionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -123,8 +123,10 @@ public class AppointmentService implements IAppointmentService {
                 selectedStation,
                 vehicle
         );
-        if(appointmentRequest.getPromotion()!=null)
+
+        if(appointmentRequest.getPromotion() != null)
             this.applyPromotion(appointmentRequest.getPromotion(), appointment);
+
         return appointmentMapper.toResponse(appointmentRepository.save(appointment));
     }
 
@@ -167,19 +169,12 @@ public class AppointmentService implements IAppointmentService {
                 vehicle
         );
 
-        if(appointmentRequest.getPromotion()!=null)
+        if(appointmentRequest.getPromotion() != null)
             this.applyPromotion(appointmentRequest.getPromotion(), appointment);
 
         return appointmentMapper.toResponse(appointmentRepository.save(appointment));
     }
-//    private boolean validateAppointmentToPayment(Appointment appointment){
-//        List<WashingStation> washingStations = getAvailableWashingStationOnAppointment(appointment.getStartDateTime(),appointment.getEndDateTime());
-//         if(washingStations.isEmpty())
-//             throw new RuntimeException("No hay estaciones disponibles");
-//         if(washingStations.stream().filter(ws -> ws.getId().equals(appointment.getWashingStation().getId())).toList().isEmpty()){
-//             WashingStation = resolveWashingStation(appointment.getWashingStation().getId(),washingStations);
-//         }
-//    }
+
 
     @Override
     public void deleteAppointment(Long appointmentId) {
@@ -250,47 +245,8 @@ public class AppointmentService implements IAppointmentService {
         return null;
     }
 
-//    @Override
-//    @Transactional
-//    public AppointmentResponse payAppointment(Long appointmentId){
-//
-//        Appointment appointment = this.findAppointmentToWash(appointmentId);
-//        Long id = appointmentRepository.getAppointmentIdAt(appointment.getStartDateTime());
-//        if( id != null && !id.equals(appointment.getId()))
-//            throw new RuntimeException("Este horario es del turno con id: " + id);//crear excepcion
-//        PaymentResponse paymentResponse = paymentService.doPayment(this.findAppointmentToWash(appointmentId));
-//        AppointmentResponse ap = appointmentMapper.toResponse(appointment);
-//
-//        if(paymentResponse.getPaymentStatus() == PaymentStatus.APPROVED)
-//            this.confirmAppointment(appointmentId);
-//        ap.setPayment(paymentResponse);
-//
-//        return ap;
-//    }
-
-//    private WashingStation resolveWashingStation(Long washingStationId, Appointment appointment) {
-//
-//        List<WashingStation> stations = this.getAvailableWashingStationOnAppointment(appointment.getStartDateTime(),appointment.getEndDateTime());
-//
-//        if(stations.stream().filter(ws -> ws.getId().equals(appointment.getWashingStation().getId())).toList().isEmpty()){
-//            resolveWashingStation(washingStationId,stations);
-//        }
-//
-//    }
-
-//    @Override
-//    public Long getAppointmentIdAt(LocalDateTime starDateTime) {
-//        return appointmentRepository.getAppointmentIdAt(starDateTime);
-//    }
 
     private void applyPromotion(Long promotionId, Appointment appointment){
-
-        if(appointment.getCustomer() != null){
-            List<Promotion> promotions = appointment.getCustomer().getPromotions();
-            if(!promotions.stream().anyMatch(p -> p.getId().equals(promotionId))){
-                throw new RuntimeException("Promocion no aplicable a este customer");
-            }
-        }
 
         BigDecimal finalPrice = promotionService.applyPromotion(promotionId,appointment);
 
@@ -357,10 +313,6 @@ public class AppointmentService implements IAppointmentService {
                 throw new InvalidTransitionException("El turno ya esta confirmado");
     }
 
-//    @Override
-//    public boolean existsAppointmentWithServiceType(Long serviceTypeId) {
-//        return appointmentRepository.existsAppointmentWithServiceType(serviceTypeId);
-//    }
 
     private boolean isValidTransition(AppointmentStatus current, AppointmentStatus next) {
         return switch (current) {

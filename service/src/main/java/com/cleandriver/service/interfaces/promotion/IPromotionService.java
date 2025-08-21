@@ -1,18 +1,17 @@
-package com.cleandriver.service.interfaces;
+package com.cleandriver.service.interfaces.promotion;
 
 
-import com.cleandriver.dto.promotion.LoyaltyPromotionRequest;
+import com.cleandriver.dto.promotion.LoyaltyPromotionDto;
 import com.cleandriver.dto.promotion.PromotionDto;
 import com.cleandriver.model.Appointment;
 import com.cleandriver.model.promotions.Promotion;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface IPromotionService {
 
-    PromotionDto createPromotion(LoyaltyPromotionRequest promotion);
+    PromotionDto createPromotion(PromotionDto promotion);
 
     PromotionDto findPromotionDto(Long promotionId);
 
@@ -24,13 +23,11 @@ public interface IPromotionService {
 
     List<Promotion> findAllPromotions();
 
-    PromotionDto updatePromotion(Long promotionId, LoyaltyPromotionRequest promotionRequest);
+    PromotionDto updatePromotion(Long promotionId, LoyaltyPromotionDto promotionRequest);
 
     BigDecimal applyPromotion(Long promotionId, Appointment appointment);
 
-    PromotionDto activatePromotion(Long promotionId, LocalDateTime promotionEnd);
 
-    PromotionDto deactivatePromotion(Long promotionId);
 
 
 

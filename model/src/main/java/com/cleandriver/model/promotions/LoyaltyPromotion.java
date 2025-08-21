@@ -1,5 +1,7 @@
 package com.cleandriver.model.promotions;
 
+import com.cleandriver.model.Appointment;
+import com.cleandriver.model.enums.PromotionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -7,29 +9,29 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 
 @Entity
 @DiscriminatorValue("LOYALTY")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class LoyaltyPromotion extends Promotion{
 
+    public LoyaltyPromotion() {
+        super.setPromotionType(PromotionType.LOYALTY);
+    }
+
     @Column(nullable = false)
     private int requiredWash;
+
 
     @Column(nullable = false)
     private int timeRangeInWeeks;
 
 
 
-    public boolean isApplicable(int washAmount){
-
-        if(!this.isActive())
-            throw new RuntimeException("La Promotion no esta activa en este momento");
-
-        return washAmount >= requiredWash;
-
-    }
-
 }
+
+

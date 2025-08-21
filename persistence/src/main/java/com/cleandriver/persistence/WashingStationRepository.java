@@ -37,4 +37,13 @@ public interface WashingStationRepository extends JpaRepository<WashingStation,L
     List<WashingStation> findAvailableStations(@Param("start") LocalDateTime start,
                                                @Param("end") LocalDateTime end);
 
+
+    @Query("SELECT COUNT(ap)>0 " +
+            "FROM appointment ap " +
+            "JOIN ap.washingStation ws " +
+            "WHERE ap.status = 'IN_PROGRESS' " +
+            "AND ws.id = :washingId")
+    boolean isInProcess(@Param("washingId") Long washingId);
+
+
 }

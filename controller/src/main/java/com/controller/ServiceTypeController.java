@@ -29,7 +29,7 @@ public class ServiceTypeController {
         return ResponseEntity.status(HttpStatus.OK).body(serviceTypeService.getServices());
     }
 
-    @DeleteMapping("delete-service")
+    @DeleteMapping("delete-service/{id}")
     public ResponseEntity<String> deleteServiceType(@PathVariable Long id){
         serviceTypeService.deleteServiceType(id);
         return ResponseEntity.status(HttpStatus.OK).body("eliminado");

@@ -8,7 +8,7 @@ import com.cleandriver.model.ServiceType;
 import com.cleandriver.model.enums.VehicleType;
 import com.cleandriver.persistence.ServiceTypeRepository;
 import com.cleandriver.service.interfaces.IServiceTypeService;
-import com.cleandriver.service.interfaces.appointment.IAppointmentService;
+import com.cleandriver.service.interfaces.appointment.IAppointmentStatsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class ServiceTypeService implements IServiceTypeService {
     private ServiceTypeMapper serviceTypeMapper;
 
     @Autowired
-    private IAppointmentService appointmentService;
+    private IAppointmentStatsService appointmentStatsService;
 
     @Override
     public ServiceTypeDto createServiceType(ServiceTypeDto serviceTypeDto) {
@@ -44,10 +44,10 @@ public class ServiceTypeService implements IServiceTypeService {
 
     @Override
     public ServiceType getServiceType(Long serviceTypeId) {
-       return  serviceTypeRepository.findById(serviceTypeId).orElseThrow(
-                () -> new ResourceNotFoundException("no se encontro service type con id " + serviceTypeId)
-        );
-
+        ServiceType service = this.findServiceType(serviceTypeId);
+        if(service.isAvailable())
+            return service;
+        throw new RuntimeException("tipo de servicio no disponible");
     }
 
     @Override
@@ -63,9 +63,23 @@ public class ServiceTypeService implements IServiceTypeService {
 
         ServiceType serviceType = this.findServiceType(id);
 
-//        if (appointmentService.existsAppointmentWithServiceType(serviceType.getId()))
-//            throw new RuntimeException("No se puede eliminar porque hay turnos activos con este tipo de servicio");
+        if (appointmentStatsService.existsAppointmentWithServiceType(serviceType.getId()))
+            throw new RuntimeException("No se puede eliminar porque hay turnos activos con este tipo de servicio");
         serviceTypeRepository.delete(serviceType);
+    }
+
+    @Override
+    public void enableServiceType(Long id) {
+        ServiceType service = this.findServiceType(id);
+        service.setAvailable(true);
+        serviceTypeRepository.save(service);
+    }
+
+    @Override
+    public void disableServiceType(Long id) {
+        ServiceType service = this.findServiceType(id);
+        service.setAvailable(false);
+        serviceTypeRepository.save(service);
     }
 
     private ServiceType findServiceType(Long id){

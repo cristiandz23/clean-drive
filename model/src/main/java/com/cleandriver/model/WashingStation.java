@@ -22,7 +22,7 @@ public class WashingStation {
     @Column(unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "washingStation")
+    @OneToMany(mappedBy = "washingStation",fetch = FetchType.LAZY)
     private List<Appointment> appointments;
 
     private boolean isBusy;

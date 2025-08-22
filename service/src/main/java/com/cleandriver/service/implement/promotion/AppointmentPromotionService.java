@@ -19,12 +19,29 @@ public class AppointmentPromotionService implements IAppointmentPromotionService
     @Autowired
     private AppointmentPromotionRepository appointmentPromotionRepository;
 
+    private AppointmentPromotion getAppointmentPromotion(Long id){
+        return appointmentPromotionRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("no se econtro appointment promotion")
+        );
+    }
+
+
     @Override
-    public AppointmentPromotion saveUse(Appointment appointment, Promotion promotion) {
+    public AppointmentPromotion saveUseWithDiscount(Appointment appointment, Promotion promotion) {
 
         AppointmentPromotion use = AppointmentPromotion.builder()
                 .appointment(appointment)
-                .lastUse(LocalDateTime.now())
+                .lastUse(LocalDate.now())
+                .promotion(promotion)
+                .build();
+        return appointmentPromotionRepository.save(use);
+    }
+
+    @Override
+    public AppointmentPromotion saveUseWithoutDiscount(Appointment appointment, Promotion promotion) {
+        AppointmentPromotion use = AppointmentPromotion.builder()
+                .appointment(appointment)
+                .lastUse(null)
                 .promotion(promotion)
                 .build();
         return appointmentPromotionRepository.save(use);

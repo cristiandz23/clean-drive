@@ -2,7 +2,6 @@ package com.cleandriver.model.promotions;
 
 
 import com.cleandriver.config.DaysOfWeekConverter;
-import com.cleandriver.config.VehicleTypeListConverter;
 import com.cleandriver.model.ServiceType;
 import com.cleandriver.model.enums.PromotionType;
 import jakarta.persistence.*;
@@ -22,8 +21,7 @@ import java.util.List;
 @Data
 @Entity(name = "promotion")
 @Inheritance(strategy = InheritanceType.JOINED)
-//@DiscriminatorColumn(name = "promotion_type")
-public class Promotion {
+public abstract class Promotion {
 
 
     @Id
@@ -70,7 +68,10 @@ public class Promotion {
     )    private List<ServiceType> serviceType;
 
     @Convert(converter = DaysOfWeekConverter.class)
-    private List<DayOfWeek> dayOfWeek;
+    private List<DayOfWeek> daysToCollect;
+
+    @Convert(converter = DaysOfWeekConverter.class)
+    private List<DayOfWeek> daysToReserve;
 
     private BigDecimal discount;
 

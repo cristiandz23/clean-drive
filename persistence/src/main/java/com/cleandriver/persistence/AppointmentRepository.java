@@ -63,13 +63,13 @@ public interface AppointmentRepository extends JpaRepository<Appointment,Long> {
 //            @Param("after") LocalDateTime after
 //    );
     @Query(value = "SELECT ap.* FROM appointment ap " +
-            "JOIN appointment_promotion app ON ap.appointment_id = app.appointment_id" +
+            "JOIN appointment_promotion app ON ap.appointment_id = app.appointment_id " +
             "JOIN vehicle ve ON ap.vehicle_id = ve.vehicle_id " +
             "WHERE ap.appointment_status = 'COMPLETED' " +
             "AND ve.plate_number = :plateNumber " +
-            "AND ap.start_date_time BETWEEN :startDate AND :endDate" +
+            "AND ap.start_date_time BETWEEN :startDate AND :endDate " +
 //            "AND ap.promotion_service_id = :appointmentPromotionId" +
-            "AND app.promotion_service_id = :promotionId",
+            "AND app.promotion_id = :promotionId ",
 
             nativeQuery = true)
     List<Appointment> findCompletedAppointmentsByPlateAndDateRange(

@@ -22,9 +22,11 @@ public class PromotionController {
 
     @PostMapping("create")
     public ResponseEntity<PromotionDto> createPromotion(@RequestBody @Valid
-                                                               PromotionDto appointment){
+                                                               PromotionDto promotion){
+        System.out.println("controller Clase real: " + promotion.getClass().getSimpleName());
+
         return ResponseEntity.status(HttpStatus.CREATED).body(promotionService
-                .createPromotion(appointment));
+                .createPromotion(promotion));
     }
 
     @DeleteMapping("delete/{promotionId}")

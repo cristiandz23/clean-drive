@@ -1,11 +1,15 @@
 package com.cleandriver.dto.promotion;
 
-import com.cleandriver.model.ServiceType;
+
+import com.cleandriver.config.DaysOfWeekConverter;
+import com.cleandriver.dto.OnlyIdAndNameEntity;
+import com.cleandriver.dto.serviceType.ServiceTypeSummary;
 import com.cleandriver.model.enums.PromotionType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.persistence.Convert;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -19,7 +23,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "promotionType")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "service")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = LoyaltyPromotionDto.class, name = "LOYALTY"),
 })
@@ -57,14 +61,17 @@ public class PromotionDto {
     @NotNull
     private boolean onlyOnce;  // ejemplo: "Primer lavado gratis"
 
-    @NotNull
+//    @NotNull
     private PromotionType promotionType;
 
     @NotNull
-    private List<Long> serviceType;
+    private List<OnlyIdAndNameEntity> serviceType;
 
     @NotNull
-    private List<DayOfWeek> dayOfWeek;
+    private List<DayOfWeek> daysToReserve;
+
+    @NotNull
+    private List<DayOfWeek> daysToCollect;
 
 
 }

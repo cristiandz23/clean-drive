@@ -1,6 +1,8 @@
 package com.cleandriver.dto.promotion;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,11 +14,13 @@ import lombok.NoArgsConstructor;
 public class LoyaltyPromotionDto extends PromotionDto {
 
 
-    @NotNull
+    @Positive @Min(1) @NotNull
     private int requiredWash;
 
-    @NotNull
+    @Positive @Min(1) @NotNull
     private int timeRangeInWeeks;
+
+    private int missingWashes;
 
 
 }

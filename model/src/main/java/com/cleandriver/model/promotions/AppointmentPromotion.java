@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -26,9 +27,9 @@ public class AppointmentPromotion {
     private Promotion promotion;
 
     @OneToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "appointment_id", nullable = false)
+    @JoinColumn(name = "appointment_id")
     private Appointment appointment;
 
-    private LocalDateTime lastUse;
+    private LocalDate lastUse;
 
 }

@@ -1,22 +1,17 @@
 package com.cleandriver.model.promotions;
 
-import com.cleandriver.model.Appointment;
 import com.cleandriver.model.enums.PromotionType;
 import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 
 @Entity
-@DiscriminatorValue("LOYALTY")
 @Data
 @AllArgsConstructor
+@Table(name = "loyalty_promotion")
 public class LoyaltyPromotion extends Promotion{
 
     public LoyaltyPromotion() {
@@ -30,7 +25,14 @@ public class LoyaltyPromotion extends Promotion{
     @Column(nullable = false)
     private int timeRangeInWeeks;
 
-
+    @Override
+    public PromotionType getPromotionType() {
+        return PromotionType.LOYALTY;
+    }
+    @Override
+    public void setPromotionType(PromotionType promotionType) {
+        // opcional: ignorar cualquier intento de setearlo
+    }
 
 }
 

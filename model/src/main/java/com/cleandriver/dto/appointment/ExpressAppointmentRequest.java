@@ -35,7 +35,6 @@ public class ExpressAppointmentRequest {
 
     private String customerDni;
 
-
     private Long promotion;
 
     @Positive

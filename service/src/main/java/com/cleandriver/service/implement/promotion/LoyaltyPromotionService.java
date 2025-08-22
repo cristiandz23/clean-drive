@@ -1,6 +1,6 @@
 package com.cleandriver.service.implement.promotion;
 
-import com.cleandriver.dto.promotion.PromotionDto;
+import com.cleandriver.dto.promotion.LoyaltyPromotionDto;
 import com.cleandriver.model.Appointment;
 import com.cleandriver.model.promotions.AppointmentPromotion;
 import com.cleandriver.model.promotions.LoyaltyPromotion;
@@ -56,14 +56,13 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
         if (promotion.getMaxUses() > usesAmount)
             return false;
 
-        if(!promotion.getDayOfWeek().contains(appointment.getStartDateTime().toLocalDate().getDayOfWeek()))
+        if(!promotion.getDaysToCollect().contains(appointment.getStartDateTime().toLocalDate().getDayOfWeek()))
+            return false;
+        if(!promotion.getDaysToReserve().contains(appointment.getStartDateTime().getDayOfWeek()))
             return false;
 
         return true;
-
     }
-
-
 
 
 
@@ -71,8 +70,6 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
     public BigDecimal applyDiscount(Appointment appointment,Promotion promotion) {
 
         BigDecimal initialPrice = appointment.getServiceType().getPrice();
-
-        isApplyPromotion(appointment, (LoyaltyPromotion) promotion);
 
         if (!hasRequiredAmountWash(promotion, appointment))
             return appointment.getServiceType().getPrice();
@@ -82,8 +79,9 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
 
     @Override
     public void createPromotion(Promotion promotion) {
+        System.out.println("Clase real: " + promotion.getClass().getSimpleName());
 
-        if((promotion instanceof LoyaltyPromotion))
+        if(!(promotion instanceof LoyaltyPromotion))
             throw new RuntimeException("Error creand");
 
         if(((LoyaltyPromotion) promotion).getRequiredWash() < 0)
@@ -97,32 +95,6 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
 
     }
 
-    private void isApplyPromotion(Appointment appointment, LoyaltyPromotion promotion){
-
-        if (!promotion.isActive())
-            throw new RuntimeException("No se puede aplicar la promocion porque no esta activa");
-
-        if (promotion.isOnlyCustomer() && appointment.getCustomer() == null)
-            throw new RuntimeException("No se puede aplicar la promocion porque solo para clientes registrados");
-
-        if (!promotion.getServiceType().contains(appointment.getServiceType()))
-            throw new RuntimeException("Esta promocion no aplica para este tipo de servicio");
-
-
-        if (!promotion.getDayOfWeek().contains(appointment.getStartDateTime().toLocalDate().getDayOfWeek()))
-            throw new RuntimeException("La promocion no aplica para este dia de la semana");
-
-        if(getUses(promotion,appointment)>promotion.getMaxUses())
-            throw new RuntimeException("Ya se uso el maximo de veces esta promocion");
-    }
-
-    private int getUses(Promotion promotion, Appointment appointment){
-        return appointmentPromotionService.getUseByPromotionAndPlateNumber(
-                appointment.getVehicleToWash().getPlateNumber(),
-                promotion.getId(),
-                promotion.getStartDate(),
-                promotion.getEndDate()).size();
-    }
 
 
     private boolean hasRequiredAmountWash(Promotion promotion, Appointment appointment){
@@ -133,13 +105,17 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
                 promotion.getId(),
                 promotion.getStartDate(),
                 promotion.getEndDate()
-        );
+        ).stream()
+                .filter(ap -> ap.getLastUse() != null)
+                .toList();
+
 
         if (!lastUses.isEmpty())
             startDateFrom = lastUses.stream()
                     .max(Comparator.comparing(ap -> ap.getAppointment().getStartDateTime()))
                     .orElse(null)
-                    .getLastUse(); //OJO AQUI
+                    .getLastUse().atStartOfDay(); //OJO AQUI
+
         else
             startDateFrom = promotion.getStartDate().atTime(LocalTime.MIDNIGHT);
 
@@ -151,6 +127,8 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
                 promotion.getId(),
                 appointment.getServiceType().getId()
         );
+        System.out.print("Requridos: " + ((LoyaltyPromotion) promotion).getRequiredWash());
+        System.out.print("\nTiene: " + washAmount);
 
         if (washAmount < ((LoyaltyPromotion) promotion).getRequiredWash())
             return false;

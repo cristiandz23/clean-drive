@@ -19,6 +19,7 @@ import com.cleandriver.persistence.AppointmentRepository;
 import com.cleandriver.service.interfaces.*;
 import com.cleandriver.service.interfaces.appointment.IAppointmentService;
 import com.cleandriver.service.interfaces.promotion.IPromotionService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -90,6 +91,7 @@ public class AppointmentService implements IAppointmentService {
 
 
     @Override
+    @Transactional
     public AppointmentResponse createAppointment(AppointmentRequest appointmentRequest) {
 
         if(appointmentRequest.getDateTime().isBefore(LocalDateTime.now()))
@@ -123,7 +125,7 @@ public class AppointmentService implements IAppointmentService {
                 selectedStation,
                 vehicle
         );
-
+        appointmentRepository.save(appointment);
         if(appointmentRequest.getPromotion() != null)
             this.applyPromotion(appointmentRequest.getPromotion(), appointment);
 
@@ -131,6 +133,7 @@ public class AppointmentService implements IAppointmentService {
     }
 
     @Override
+    @Transactional
     public AppointmentResponse createExpressAppointment(ExpressAppointmentRequest appointmentRequest) {
 
         if(appointmentRequest.getDateTime().isBefore(LocalDateTime.now()))
@@ -168,9 +171,12 @@ public class AppointmentService implements IAppointmentService {
                 selectedStation,
                 vehicle
         );
+        appointmentRepository.save(appointment);
+        if(appointmentRequest.getPromotion() != null){
+            this.   applyPromotion(appointmentRequest.getPromotion(), appointment);
 
-        if(appointmentRequest.getPromotion() != null)
-            this.applyPromotion(appointmentRequest.getPromotion(), appointment);
+        }
+
 
         return appointmentMapper.toResponse(appointmentRepository.save(appointment));
     }

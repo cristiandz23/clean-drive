@@ -34,4 +34,10 @@ public class CustomerController {
                 .registerVehicle(customerDni,vehicle));
     }
 
+    @DeleteMapping("/delete/{customerDni}")
+    public ResponseEntity<String> deleteCustomer(@PathVariable String customerDni){
+        customerService.deleteCustomer(customerDni);
+        return ResponseEntity.status(HttpStatus.OK).body("Eliminado");
+    }
+
 }

@@ -55,6 +55,13 @@ public class PaymentService implements IPaymentService {
         return payment;
     }
 
+//    public Payment doPaymentWhenIsFree(Appointment appointment){
+//
+//
+//
+//    }
+
+
     @Override
     public Payment savePayment(Payment payment) {
         return paymentRepository.save(payment);

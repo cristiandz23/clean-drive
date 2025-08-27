@@ -35,6 +35,7 @@ public interface IAppointmentService {
 
     AppointmentResponse updateAppointment(Long appointmentId,AppointmentRequest appointmentRequest);
 
+
     void validateTransition(AppointmentStatus current, AppointmentStatus next);
 
 

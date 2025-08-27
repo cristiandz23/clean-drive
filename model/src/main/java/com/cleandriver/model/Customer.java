@@ -35,7 +35,7 @@ public class Customer {
     @OneToOne(cascade = {CascadeType.ALL},orphanRemoval = true)
     private Address address;
 
-    @OneToMany(mappedBy = "customer",cascade = {CascadeType.PERSIST},orphanRemoval = true)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST)
     private List<Vehicle> vehicles;
 
 

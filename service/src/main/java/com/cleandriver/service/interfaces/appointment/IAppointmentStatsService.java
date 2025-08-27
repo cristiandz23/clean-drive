@@ -22,9 +22,12 @@ public interface IAppointmentStatsService {
 
     List<AppointmentResponse> getAppointmentByCustomer(String customerDni);
 
+    boolean hasPendingAppointments(Long customerId);
+
     List<AppointmentResponse> getAppointmentByCustomer(String customerDni, AppointmentStatus appointmentStatus);
 
     boolean existsAppointmentWithServiceType(Long serviceTypeId);
 
 
+    void detachCustomerFromAppointments(Long customerId);
 }

@@ -43,6 +43,8 @@ public class AppointmentPaymentIntegrationService implements IAppointmentPayment
     public AppointmentResponse payCashAppointment(Long appointmentId){
         AppointmentResponse appointment = appointmentService.confirmAndSelectWashingStation(appointmentId);
 
+        appointmentService.validateTransition(appointment.getStatus(), AppointmentStatus.CONFIRMED);
+
         if(appointment.getPayment().getPaymentMethod() == PaymentMethod.VIRTUAL_WALLET)
             throw new RuntimeException("Solo para pagos en caja");
 
@@ -53,6 +55,7 @@ public class AppointmentPaymentIntegrationService implements IAppointmentPayment
             appointmentService.confirmAppointment(appointmentId);
 
         appointment.setPayment(paymentResponse);
+
         return appointment;
     }
 
@@ -70,7 +73,7 @@ public class AppointmentPaymentIntegrationService implements IAppointmentPayment
         PaymentResponse paymentResponse = paymentService.appointmentPayment(
                 appointmentService.findAppointmentToWash(appointmentId));
 
-        appointmentService.validateTransition(appointment.getStatus(), AppointmentStatus.CONFIRMED);
+//        appointmentService.validateTransition(appointment.getStatus(), AppointmentStatus.CONFIRMED);
 
         appointment.setPayment(paymentResponse);
 

@@ -43,7 +43,7 @@ public class Appointment {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "washing_station_id")//, nullable = false
     private WashingStation washingStation;
 

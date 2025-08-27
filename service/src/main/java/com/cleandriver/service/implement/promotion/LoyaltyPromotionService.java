@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Comparator;
@@ -43,7 +44,6 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
 
         int usesAmount = lastUses.size();
 
-
         if(!promotion.isActive())
             return false;
 
@@ -58,6 +58,7 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
 
         if(!promotion.getDaysToCollect().contains(appointment.getStartDateTime().toLocalDate().getDayOfWeek()))
             return false;
+
         if(!promotion.getDaysToReserve().contains(appointment.getStartDateTime().getDayOfWeek()))
             return false;
 
@@ -71,10 +72,14 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
 
         BigDecimal initialPrice = appointment.getServiceType().getPrice();
 
-        if (!hasRequiredAmountWash(promotion, appointment))
+        if (!hasRequiredAmountWash(promotion, appointment)) {
             return appointment.getServiceType().getPrice();
+        }
+        BigDecimal discountAmount = initialPrice
+                .multiply(promotion.getDiscount())
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
-        return initialPrice.multiply(promotion.getDiscount()).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        return initialPrice.subtract(discountAmount);
     }
 
     @Override
@@ -104,21 +109,18 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
                 appointment.getVehicleToWash().getPlateNumber(),
                 promotion.getId(),
                 promotion.getStartDate(),
-                promotion.getEndDate()
-        ).stream()
+                promotion.getEndDate())
+                .stream()
                 .filter(ap -> ap.getLastUse() != null)
                 .toList();
 
-
-        if (!lastUses.isEmpty())
+        if (!lastUses.isEmpty()) {
             startDateFrom = lastUses.stream()
                     .max(Comparator.comparing(ap -> ap.getAppointment().getStartDateTime()))
                     .orElse(null)
-                    .getLastUse().atStartOfDay(); //OJO AQUI
-
-        else
+                    .getLastUse();
+        }else
             startDateFrom = promotion.getStartDate().atTime(LocalTime.MIDNIGHT);
-
 
         int washAmount = appointmentStatsService.getCompletedAppointmentsByPlateAndDateRangeAndService(
                 appointment.getVehicleToWash().getPlateNumber(),
@@ -127,11 +129,10 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
                 promotion.getId(),
                 appointment.getServiceType().getId()
         );
-        System.out.print("Requridos: " + ((LoyaltyPromotion) promotion).getRequiredWash());
-        System.out.print("\nTiene: " + washAmount);
 
         if (washAmount < ((LoyaltyPromotion) promotion).getRequiredWash())
             return false;
+
         return true;
 
     }

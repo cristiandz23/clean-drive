@@ -1,4 +1,4 @@
-package com.cleandriver.service.implement;
+package com.cleandriver.service.implement.appointment;
 
 import com.cleandriver.dto.appointment.AppointmentRequest;
 import com.cleandriver.dto.appointment.AppointmentResponse;
@@ -128,7 +128,6 @@ public class AppointmentService implements IAppointmentService {
         appointmentRepository.save(appointment);
         if(appointmentRequest.getPromotion() != null)
             this.applyPromotion(appointmentRequest.getPromotion(), appointment);
-
         return appointmentMapper.toResponse(appointmentRepository.save(appointment));
     }
 
@@ -251,6 +250,11 @@ public class AppointmentService implements IAppointmentService {
         return null;
     }
 
+    @Override
+    public void validateTransition(AppointmentStatus current, AppointmentStatus next){
+        if(!isValidTransition(current,next))
+            throw new InvalidTransitionException("El turno ya esta confirmado");
+    }
 
     private void applyPromotion(Long promotionId, Appointment appointment){
 
@@ -313,11 +317,7 @@ public class AppointmentService implements IAppointmentService {
                 new ResourceNotFoundException("No se encontro appointment con id: " + id));
     }
 
-    @Override
-    public void validateTransition(AppointmentStatus current, AppointmentStatus next){
-         if(!isValidTransition(current,next))
-                throw new InvalidTransitionException("El turno ya esta confirmado");
-    }
+
 
 
     private boolean isValidTransition(AppointmentStatus current, AppointmentStatus next) {

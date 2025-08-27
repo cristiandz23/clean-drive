@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Table(name = ("appointment_promotion"))
 public class AppointmentPromotion {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(cascade = CascadeType.MERGE)
@@ -30,6 +30,8 @@ public class AppointmentPromotion {
     @JoinColumn(name = "appointment_id")
     private Appointment appointment;
 
-    private LocalDate lastUse;
+    private LocalDateTime lastUse;
+
+    private boolean wasApply;
 
 }

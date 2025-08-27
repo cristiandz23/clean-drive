@@ -6,6 +6,7 @@ import com.cleandriver.model.promotions.Promotion;
 import com.cleandriver.persistence.AppointmentPromotionRepository;
 import com.cleandriver.service.interfaces.promotion.IAppointmentPromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -31,8 +32,9 @@ public class AppointmentPromotionService implements IAppointmentPromotionService
 
         AppointmentPromotion use = AppointmentPromotion.builder()
                 .appointment(appointment)
-                .lastUse(LocalDate.now())
+                .lastUse(LocalDateTime.now())
                 .promotion(promotion)
+                .wasApply(true)
                 .build();
         return appointmentPromotionRepository.save(use);
     }
@@ -43,6 +45,7 @@ public class AppointmentPromotionService implements IAppointmentPromotionService
                 .appointment(appointment)
                 .lastUse(null)
                 .promotion(promotion)
+                .wasApply(false)
                 .build();
         return appointmentPromotionRepository.save(use);
     }

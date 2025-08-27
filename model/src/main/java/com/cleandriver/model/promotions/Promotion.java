@@ -43,7 +43,7 @@ public abstract class Promotion {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 
     private boolean active;
 

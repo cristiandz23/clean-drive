@@ -14,14 +14,10 @@ import java.util.List;
 @Mapper(componentModel = "spring",uses = ServiceTypeMapper.class)
 public interface PromotionMapper {
 
-//    @Mapping(target = "serviceType", source = "serviceType", qualifiedByName = "mapServiceTypes")
     PromotionDto toDto(Promotion promotion);
 
-//    @Mapping(target = "serviceType", source = "serviceType", qualifiedByName = "mapServiceTypes")
     LoyaltyPromotionDto toDto(LoyaltyPromotion promo);
 
-//    @Mapping(target = "serviceType", ignore = true)
-//    Promotion toEntity(PromotionDto dto);
 
     @Mapping(target = "serviceType", ignore = true)
     LoyaltyPromotion toEntity(LoyaltyPromotionDto dto);

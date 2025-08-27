@@ -1,7 +1,9 @@
 package com.cleandriver.dto.appointment;
 
+import com.cleandriver.config.PlateNumberDeserializer;
 import com.cleandriver.model.enums.PaymentMethod;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -37,6 +39,7 @@ public class AppointmentRequest {
 
     @NotNull(message = "plateNumber cannot be null")
     @Size(message = "plateNumber size should be within 6 and 7 long ")
+    @JsonDeserialize(using = PlateNumberDeserializer.class)
     private String plateNumber;
 
 

@@ -27,11 +27,26 @@ public class WashingStationService implements IWashingStationService {
 
         WashingStation washing = this.findWashingStation(washingStationId);
 
-
         washingStationMapper.toUpdate(washingStation,washing);
 
+        return washingStationMapper.toDto(washingStationRepository.save(washing));
+    }
 
-        return null;
+    @Override
+    public WashingStationDto enableWashingStation(Long washingId) {
+
+        WashingStation washingStation = this.findWashingStation(washingId);
+        washingStation.setAvailable(true);
+        return washingStationMapper.toDto(washingStationRepository.save(washingStation));
+    }
+
+    @Override
+    public WashingStationDto disableWashingStation(Long washingId) {
+        if(washingStationRepository.isInProcess(washingId))
+            throw new RuntimeException("Hay turnos por resolver no puede desactivar la estacion");
+        WashingStation washingStation = this.findWashingStation(washingId);
+        washingStation.setAvailable(false);
+        return washingStationMapper.toDto(washingStationRepository.save(washingStation));
     }
 
     @Override
@@ -39,7 +54,7 @@ public class WashingStationService implements IWashingStationService {
 
         WashingStation washingStation = this.findWashingStation(washingStationId);
         if(washingStationRepository.isInProcess(washingStationId))
-            throw new RuntimeException("No se puede eliminar porque esta en un lavado en proceso");
+            throw new RuntimeException("Tiene turnos pendientes, no se pude eliminar");
         washingStationRepository.delete(washingStation);
     }
 
@@ -139,4 +154,7 @@ public class WashingStationService implements IWashingStationService {
     public List<WashingStation> getAvailableWashingStationOnAppointment(LocalDateTime startAppointment, LocalDateTime endAppointment) {
         return washingStationRepository.findAvailableStations(startAppointment,endAppointment);
     }
+
+
+
 }

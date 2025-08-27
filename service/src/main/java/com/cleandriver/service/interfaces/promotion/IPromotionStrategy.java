@@ -1,6 +1,5 @@
 package com.cleandriver.service.interfaces.promotion;
 
-import com.cleandriver.dto.promotion.PromotionDto;
 import com.cleandriver.model.Appointment;
 import com.cleandriver.model.promotions.Promotion;
 

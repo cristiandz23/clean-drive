@@ -5,6 +5,7 @@ import com.cleandriver.model.WashingStation;
 import com.cleandriver.model.enums.AppointmentStatus;
 import jakarta.validation.Valid;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,9 +16,6 @@ import java.util.List;
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment,Long> {
 
-//    List<Appointment> findAllByStatus(AppointmentStatus status);
-
-//    List<Appointment> findAllByStatusAndCustomer_Dni(AppointmentStatus status, String dni);
 
     @Query(value = "SELECT ap.* FROM appointment AS ap " +
             "JOIN customer AS cu ON cu.customer_id = ap.customer_id " +
@@ -28,7 +26,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment,Long> {
             "JOIN vehicle AS ve ON ve.vehicle_id = ap.vehicle_id " +
             "WHERE ve.plate_number = :plateNumber ",nativeQuery = true)
     List<Appointment> findAppointmentByPlateNumber(@Param("plateNumber") String plateNumber);
-//    List<Appointment> findAllByDateTimeBetween(LocalDateTime start, LocalDateTime end);
+
     List<Appointment> findAllByStartDateTimeBetween(LocalDateTime start, LocalDateTime end);
 
     @Query(value = "SELECT * FROM appointment WHERE " +
@@ -38,37 +36,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment,Long> {
 
 
 
-//    @Query("SELECT a FROM Appointment a WHERE a.washingStation = :station AND " +
-//            "(:start < a.endTime AND :end > a.startTime)")
-//    List<Appointment> findByWashingStationAndOverlapping(@Param("station") WashingStation station,
-//                                                         @Param("start") LocalDateTime start,
-//                                                         @Param("end") LocalDateTime end);
-
-    List<Appointment> findByVehicleToWash_PlateNumberAndStartDateTimeAfter(
-            String plateNumber,
-            LocalDateTime after
-    );
-
-//    @Query(value = "SELECT * FROM appointment AS ap" +
-//            "JOIN vehicle AS ve ON ap.vehicle_id = ve.vehicle_id" +
-//            "WHERE ap.appointment_status = :status" +
-//            "AND ve.plate_number = :plateNumber" +
-//            "AND ap.start_date_time = :after",
-//            nativeQuery = true
-//
-//    )
-//    List<Appointment> findAppointmentsToPlateNumbersAndStartDateTime(
-//            @Param("plateNumber") String plateNumber,
-//            @Param("status") AppointmentStatus status,
-//            @Param("after") LocalDateTime after
-//    );
     @Query(value = "SELECT ap.* FROM appointment ap " +
             "JOIN appointment_promotion app ON ap.appointment_id = app.appointment_id " +
             "JOIN vehicle ve ON ap.vehicle_id = ve.vehicle_id " +
-            "WHERE ap.appointment_status = 'COMPLETED' " +
+            "WHERE ap.appointment_status IN ('COMPLETED','CONFIRMED') " +
             "AND ve.plate_number = :plateNumber " +
             "AND ap.start_date_time BETWEEN :startDate AND :endDate " +
-//            "AND ap.promotion_service_id = :appointmentPromotionId" +
             "AND app.promotion_id = :promotionId ",
 
             nativeQuery = true)
@@ -103,19 +76,28 @@ public interface AppointmentRepository extends JpaRepository<Appointment,Long> {
     Long hasAppointmentInRangeByVehiclePlate(@Param("plateNumber") String plateNumber,
                                               @Param("start") LocalDateTime start,
                                               @Param("end") LocalDateTime end);
-    //SI DEVUELVE 1 ESE AUTO YA TIENE UN TURNO EN ESE RANGO HORARIO, SI DEVULUELVE 0 ESE AUTO NO TIENE TURNOS
-    //EN ESE RANGO HORARIO Y PUEDE TOMAR UN TURNO
-
-//    @Query("SELECT CASE WHEN EXISTS (" +
-//            "SELECT ap FROM appointment ap " +
-//            "WHERE ap.serviceType.id = :serviceId " +
-//            "AND ap.status IN ('CONFIRMED','CREATED')) " +
-//            "THEN true ELSE false END")
-//    boolean existsAppointmentWithServiceType(@Param("serviceId") Long serviceId);
-
 
     @Query("SELECT COUNT(ap)>0 FROM appointment ap " +
             "WHERE ap.serviceType.id = :serviceId " +
             "AND ap.status IN ('CONFIRMED','CREATED') ")
     boolean existsAppointmentWithServiceType(@Param("serviceId") Long serviceId);
+
+
+
+    @Query(
+            value = "SELECT COUNT(ap)>0 FROM appointment ap " +
+                    "WHERE ap.status IN ('CONFIRMED','IN_PROGRESS','NO_SHOW')"
+    )
+    boolean customerHasPendingAppointment(Long customerId);
+
+    @Modifying
+    @Query(value = "UPDATE appointment a SET a.customer_id = NULL WHERE a.customer_id = :customerId",
+    nativeQuery = true)
+    void detachCustomerFromAppointments(@Param("customerId") Long customerId);
+
+//    @Modifying
+//    @Query(value = "UPDATE appointment a SET a.customer_id = NULL WHERE a.customer_id = :customerId",
+//            nativeQuery = true)
+//    void detachCustomerFromAppointments(@Param("customerId") Long customerId);
+//
 }

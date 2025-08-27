@@ -46,5 +46,8 @@ public class PromotionController {
         return ResponseEntity.status(HttpStatus.OK).body(promotionService.findAllPromotionsDto());
     }
 
+    @GetMapping
+    public ResponseEntity<PromotionDto> getAvailablePromotion()
+
 
 }

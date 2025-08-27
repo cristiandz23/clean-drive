@@ -17,6 +17,8 @@ public interface IPromotionService {
 
     Promotion findPromotionById(Long promotionId);
 
+    List<PromotionDto> checkCompatibility(Appointment appointment);
+
     void deletePromotion(Long id);
 
     List<PromotionDto> findAllPromotionsDto();

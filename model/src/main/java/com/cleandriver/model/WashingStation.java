@@ -27,6 +27,8 @@ public class WashingStation {
 
     private boolean isBusy;
 
+    private boolean isAvailable;
+
     @Override
     public String toString() {
         return "WashingStation{" +

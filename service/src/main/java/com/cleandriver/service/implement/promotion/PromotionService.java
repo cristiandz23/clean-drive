@@ -6,7 +6,6 @@ import com.cleandriver.dto.promotion.PromotionDto;
 import com.cleandriver.mapper.PromotionMapper;
 import com.cleandriver.model.Appointment;
 import com.cleandriver.model.ServiceType;
-import com.cleandriver.model.promotions.LoyaltyPromotion;
 import com.cleandriver.model.promotions.Promotion;
 import com.cleandriver.persistence.PromotionRepository;
 import com.cleandriver.service.interfaces.IServiceTypeService;
@@ -18,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,12 +56,8 @@ public class PromotionService implements IPromotionService {
 
     @Override
     public PromotionDto createPromotion(PromotionDto promotionDto) {;
-        System.out.println("0 Clase real: " + promotionDto.getClass().getSimpleName());
 
         var promotion = promotionMapper.mapPolymorphic(promotionDto);
-
-        System.out.println("1 Clase real: " + promotion.getClass().getSimpleName());
-
 
         List<ServiceType> serviceTypes = new ArrayList<>();
         promotionDto.getServiceType().forEach(
@@ -72,16 +67,12 @@ public class PromotionService implements IPromotionService {
         String typeKey = promotion.getPromotionType().name();
         IPromotionStrategy strategy = strategyMap.get(typeKey);
 
-        promotion.setCreatedAt(LocalDateTime.now());
+        promotion.setCreatedAt(LocalDate.now());
         promotion.setServiceType(serviceTypes);
 
         strategy.createPromotion(promotion);
 
-        System.out.print(promotion.toString());
-        System.out.println("la que manda: " + promotion.getClass().getSimpleName());
-
         Promotion pro = this.savePromotion(promotion);
-        System.out.println("la que devuelve real: " + promotion.getClass().getSimpleName());
 
         return promotionMapper.mapPolymorphic(pro);
     }
@@ -94,6 +85,25 @@ public class PromotionService implements IPromotionService {
     @Override
     public Promotion findPromotionById(Long promotionId) {
         return this.findPromotion(promotionId);
+    }
+
+    @Override
+    public List<PromotionDto> checkCompatibility(Appointment appointment) {
+        List<Promotion> promotions = this.findAllPromotions();
+
+         promotions.stream()
+                .filter(
+                        promotion -> {
+                            String typeKey = promotion.getPromotionType().name();
+                            IPromotionStrategy strategy = strategyMap.get(typeKey);
+
+                           return  strategy.isCompatible(appointment, promotion);
+                        }
+                );
+
+        return promotions.stream()
+                .map(promotionMapper::mapPolymorphic)
+                .toList();
     }
 
     @Override
@@ -130,7 +140,6 @@ public class PromotionService implements IPromotionService {
     }
 
 
-
     @Override
     public BigDecimal applyPromotion(Long promotionId, Appointment appointment){
 
@@ -149,9 +158,10 @@ public class PromotionService implements IPromotionService {
             appointmentPromotionService.saveUseWithDiscount(appointment,promotion);
         }
 
-
         return finalPrice;
     }
+
+
 
     private void isApplyPromotion(Appointment appointment, Promotion promotion){
 
@@ -169,9 +179,6 @@ public class PromotionService implements IPromotionService {
 
         if(getUses(promotion,appointment)>promotion.getMaxUses())
             throw new RuntimeException("Ya se uso el maximo de veces esta promocion");
-//
-//        if(!promotion.getDaysToCollect().contains(appointment.getStartDateTime().getDayOfWeek()))
-//            throw new RuntimeException("Esta promocion solo se puede cobrar los didas " + promotion.getDaysToCollect());
     }
 
     private int getUses(Promotion promotion, Appointment appointment){
@@ -179,7 +186,9 @@ public class PromotionService implements IPromotionService {
                 appointment.getVehicleToWash().getPlateNumber(),
                 promotion.getId(),
                 promotion.getStartDate(),
-                promotion.getEndDate()).size();
+                promotion.getEndDate()).stream().filter(
+                        pr -> pr.getLastUse() != null)
+                .toList().size();
     }
 
 }

@@ -81,6 +81,11 @@ public class AppointmentStatsService implements IAppointmentStatsService {
     }
 
     @Override
+    public boolean hasPendingAppointments(Long customerId) {
+        return appointmentRepository.customerHasPendingAppointment(customerId);
+    }
+
+    @Override
     public List<AppointmentResponse> getAppointmentByCustomer(String customerDni, AppointmentStatus appointmentStatus) {
 
         return appointmentRepository.findAppointmentByCustomer(customerDni)
@@ -93,6 +98,11 @@ public class AppointmentStatsService implements IAppointmentStatsService {
     @Override
     public boolean existsAppointmentWithServiceType(Long serviceTypeId) {
         return appointmentRepository.existsAppointmentWithServiceType(serviceTypeId);
+    }
+
+    @Override
+    public void detachCustomerFromAppointments(Long customerId){
+        appointmentRepository.detachCustomerFromAppointments(customerId);
     }
 
 }

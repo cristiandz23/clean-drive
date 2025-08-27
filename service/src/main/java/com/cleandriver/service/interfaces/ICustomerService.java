@@ -15,4 +15,6 @@ public interface ICustomerService {
 
 
     CustomerResponse getCustomerResponseByDni(String dni);
+
+    void deleteCustomer(String customerDni);
 }

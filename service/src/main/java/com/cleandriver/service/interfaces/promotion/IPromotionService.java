@@ -1,8 +1,10 @@
 package com.cleandriver.service.interfaces.promotion;
 
 
+import com.cleandriver.dto.promotion.ConsultPromotionsDto;
 import com.cleandriver.dto.promotion.LoyaltyPromotionDto;
 import com.cleandriver.dto.promotion.PromotionDto;
+import com.cleandriver.dto.promotion.PromotionSummary;
 import com.cleandriver.model.Appointment;
 import com.cleandriver.model.promotions.Promotion;
 
@@ -17,7 +19,7 @@ public interface IPromotionService {
 
     Promotion findPromotionById(Long promotionId);
 
-    List<PromotionDto> checkCompatibility(Appointment appointment);
+    List<PromotionSummary> checkCompatibility(ConsultPromotionsDto promotionDto);
 
     void deletePromotion(Long id);
 

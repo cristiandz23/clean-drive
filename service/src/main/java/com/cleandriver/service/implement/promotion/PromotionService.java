@@ -1,11 +1,14 @@
 package com.cleandriver.service.implement.promotion;
 
 
+import com.cleandriver.dto.promotion.ConsultPromotionsDto;
 import com.cleandriver.dto.promotion.LoyaltyPromotionDto;
 import com.cleandriver.dto.promotion.PromotionDto;
+import com.cleandriver.dto.promotion.PromotionSummary;
 import com.cleandriver.mapper.PromotionMapper;
 import com.cleandriver.model.Appointment;
 import com.cleandriver.model.ServiceType;
+import com.cleandriver.model.promotions.AppointmentPromotion;
 import com.cleandriver.model.promotions.Promotion;
 import com.cleandriver.persistence.PromotionRepository;
 import com.cleandriver.service.interfaces.IServiceTypeService;
@@ -88,21 +91,20 @@ public class PromotionService implements IPromotionService {
     }
 
     @Override
-    public List<PromotionDto> checkCompatibility(Appointment appointment) {
-        List<Promotion> promotions = this.findAllPromotions();
+    public List<PromotionSummary> checkCompatibility(ConsultPromotionsDto promotionDto) {
 
-         promotions.stream()
+        return this.findAllPromotions().stream()
+                .filter( pr -> this.isCompatible(pr,promotionDto) )
+
                 .filter(
                         promotion -> {
                             String typeKey = promotion.getPromotionType().name();
                             IPromotionStrategy strategy = strategyMap.get(typeKey);
 
-                           return  strategy.isCompatible(appointment, promotion);
+                            return strategy.isCompatible(promotionDto, promotion);
                         }
-                );
-
-        return promotions.stream()
-                .map(promotionMapper::mapPolymorphic)
+                )
+                .map(promotionMapper::toSummary)
                 .toList();
     }
 
@@ -140,6 +142,7 @@ public class PromotionService implements IPromotionService {
     }
 
 
+
     @Override
     public BigDecimal applyPromotion(Long promotionId, Appointment appointment){
 
@@ -161,6 +164,49 @@ public class PromotionService implements IPromotionService {
         return finalPrice;
     }
 
+    private boolean isCompatible(Promotion promotion, ConsultPromotionsDto promotionsDto){
+
+        if(promotionsDto.getPlateNumber() == null || promotionsDto.getVehicleType() == null
+                || promotionsDto.getServiceType() == null || promotionsDto.getDateTime() == null)
+            return false;
+
+
+        List<AppointmentPromotion> lastUses = appointmentPromotionService.getUseByPromotionAndPlateNumber(
+                        promotionsDto.getPlateNumber(),
+                        promotion.getId(),
+                        promotion.getStartDate(),
+                        promotion.getEndDate()
+                ).stream()
+                .filter(ap -> ap.isWasApply())
+                .toList();
+
+        if(promotion.getMaxUses() < lastUses.size())
+            return false;
+
+        if(!promotion.isActive())
+            return false;
+
+        if(promotion.isOnlyCustomer() && promotionsDto.getCustomerDni() == null)
+            return false;
+
+        if(promotion.getServiceType()
+                .stream()
+                .noneMatch(st -> st.getId().equals(promotionsDto.getServiceType())))
+            return false;
+
+       if(promotion.getServiceType().stream()
+                .noneMatch(st -> st.getVehicleType().contains(promotionsDto.getVehicleType())))
+           return false;
+
+        if(!promotion.getDaysToCollect().contains(promotionsDto.getDateTime().toLocalDate().getDayOfWeek()))
+            return false;
+
+        if(!promotion.getDaysToReserve().contains(LocalDate.now().getDayOfWeek()))
+            return false;
+
+
+        return true;
+    }
 
 
     private void isApplyPromotion(Appointment appointment, Promotion promotion){

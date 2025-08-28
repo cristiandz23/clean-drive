@@ -59,7 +59,7 @@ public class PromotionDto {
     private double discount;
 
     @NotNull
-    private boolean onlyOnce;  // ejemplo: "Primer lavado gratis"
+    private boolean onlyOnce;
 
 //    @NotNull
     private PromotionType promotionType;

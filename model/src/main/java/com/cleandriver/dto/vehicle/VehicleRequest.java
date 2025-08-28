@@ -3,6 +3,7 @@ package com.cleandriver.dto.vehicle;
 import com.cleandriver.config.PlateNumberDeserializer;
 import com.cleandriver.model.enums.VehicleType;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ public class VehicleRequest {
     @Size(min = 7, max = 9, message = "PlateNumber should be between 7 and 9 characters")
     @JsonDeserialize(using = PlateNumberDeserializer.class)
     private String plateNumber;
-
+    @NotEmpty
     private String brand;
 
     private String model;

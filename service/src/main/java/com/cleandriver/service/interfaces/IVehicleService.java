@@ -14,4 +14,8 @@ public interface IVehicleService {
     Vehicle regiterVehicleByExpressAppointment(VehicleRequest vehicle);
 
     Vehicle findVehicleOrNullByPlateNumber(String plateNumber);
+
+    VehicleResponse findByPlateNumber(String plateNumber);
+
+    VehicleResponse updateVehicle(String plateNumber, VehicleRequest vehicleRequest);
 }

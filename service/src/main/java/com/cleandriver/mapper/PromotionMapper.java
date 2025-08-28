@@ -2,6 +2,7 @@ package com.cleandriver.mapper;
 
 import com.cleandriver.dto.promotion.LoyaltyPromotionDto;
 import com.cleandriver.dto.promotion.PromotionDto;
+import com.cleandriver.dto.promotion.PromotionSummary;
 import com.cleandriver.model.ServiceType;
 import com.cleandriver.model.promotions.LoyaltyPromotion;
 import com.cleandriver.model.promotions.Promotion;
@@ -18,6 +19,7 @@ public interface PromotionMapper {
 
     LoyaltyPromotionDto toDto(LoyaltyPromotion promo);
 
+    PromotionSummary toSummary(Promotion promotion);
 
     @Mapping(target = "serviceType", ignore = true)
     LoyaltyPromotion toEntity(LoyaltyPromotionDto dto);

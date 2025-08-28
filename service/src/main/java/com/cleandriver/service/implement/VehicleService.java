@@ -28,6 +28,7 @@ public class VehicleService implements IVehicleService {
         );
     }
 
+
     @Override
     public VehicleResponse registerVehicle(VehicleRequest vehicle, Customer customer) {
 
@@ -56,6 +57,20 @@ public class VehicleService implements IVehicleService {
     @Override
     public Vehicle findVehicleOrNullByPlateNumber(String plateNumber) {
         return vehicleRepository.findByPlateNumber(plateNumber).orElse(null);
+    }
+
+    @Override
+    public VehicleResponse findByPlateNumber(String plateNumber) {
+        return vehicleMapper.toVehicleResponse(this.findVehicleByPlateNumber(plateNumber));
+    }
+    @Override
+    public VehicleResponse updateVehicle(String plateNumber, VehicleRequest vehicleRequest){
+        Vehicle vehicle = this.findVehicleByPlateNumber(plateNumber);
+
+        vehicleMapper.toUpdate(vehicleRequest,vehicle);
+
+        return vehicleMapper.toVehicleResponse(vehicleRepository.save(vehicle));
+
     }
 
 }

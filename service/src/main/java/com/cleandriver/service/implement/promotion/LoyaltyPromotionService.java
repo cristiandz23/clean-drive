@@ -1,5 +1,6 @@
 package com.cleandriver.service.implement.promotion;
 
+import com.cleandriver.dto.promotion.ConsultPromotionsDto;
 import com.cleandriver.dto.promotion.LoyaltyPromotionDto;
 import com.cleandriver.model.Appointment;
 import com.cleandriver.model.promotions.AppointmentPromotion;
@@ -33,35 +34,10 @@ public class LoyaltyPromotionService implements IPromotionStrategy {
     private IAppointmentPromotionService appointmentPromotionService;
 
     @Override
-    public boolean isCompatible(Appointment appointment, Promotion promotion) {
-
-        List<AppointmentPromotion> lastUses = appointmentPromotionService.getUseByPromotionAndPlateNumber(
-                appointment.getVehicleToWash().getPlateNumber(),
-                promotion.getId(),
-                promotion.getStartDate(),
-                promotion.getEndDate()
-        );
-
-        int usesAmount = lastUses.size();
-
-        if(!promotion.isActive())
-            return false;
-
-        if(promotion.isOnlyCustomer() && appointment.getCustomer() == null)
-            return false;
-
-        if(!promotion.getServiceType().contains(appointment.getServiceType()))
-            return false;
-
-        if (promotion.getMaxUses() > usesAmount)
-            return false;
-
-        if(!promotion.getDaysToCollect().contains(appointment.getStartDateTime().toLocalDate().getDayOfWeek()))
-            return false;
-
-        if(!promotion.getDaysToReserve().contains(appointment.getStartDateTime().getDayOfWeek()))
-            return false;
-
+    public boolean isCompatible(ConsultPromotionsDto appointment, Promotion promotion) {
+        System.out.print("es loyalty y devuelve true \n ");
+        LoyaltyPromotion as = (LoyaltyPromotion) promotion;
+        System.out.println("es loyalty y sus prop son: " + as.getRequiredWash() + "\n");
         return true;
     }
 

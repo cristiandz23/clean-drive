@@ -1,5 +1,6 @@
 package com.cleandriver.service.interfaces.promotion;
 
+import com.cleandriver.dto.promotion.ConsultPromotionsDto;
 import com.cleandriver.model.Appointment;
 import com.cleandriver.model.promotions.Promotion;
 
@@ -7,7 +8,7 @@ import java.math.BigDecimal;
 
 public interface IPromotionStrategy {
 
-    boolean isCompatible(Appointment appointment, Promotion promotion);
+    boolean isCompatible(ConsultPromotionsDto appointment, Promotion promotion);
 
     BigDecimal applyDiscount(Appointment appointment,Promotion promotion);
 

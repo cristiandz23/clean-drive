@@ -47,7 +47,7 @@ public class Appointment {
     @JoinColumn(name = "washing_station_id")//, nullable = false
     private WashingStation washingStation;
 
-    @ManyToOne(optional = false,cascade = CascadeType.PERSIST)
+    @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicleToWash;
 

@@ -31,7 +31,6 @@ public class LoyaltyPromotion extends Promotion{
     }
     @Override
     public void setPromotionType(PromotionType promotionType) {
-        // opcional: ignorar cualquier intento de setearlo
     }
 
 }

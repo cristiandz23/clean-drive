@@ -172,10 +172,9 @@ public class AppointmentService implements IAppointmentService {
         );
         appointmentRepository.save(appointment);
         if(appointmentRequest.getPromotion() != null){
-            this.   applyPromotion(appointmentRequest.getPromotion(), appointment);
+            this.applyPromotion(appointmentRequest.getPromotion(), appointment);
 
         }
-
 
         return appointmentMapper.toResponse(appointmentRepository.save(appointment));
     }

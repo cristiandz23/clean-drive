@@ -1,7 +1,9 @@
 package com.controller;
 
 
+import com.cleandriver.dto.promotion.ConsultPromotionsDto;
 import com.cleandriver.dto.promotion.PromotionDto;
+import com.cleandriver.dto.promotion.PromotionSummary;
 import com.cleandriver.service.interfaces.promotion.IPromotionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +48,10 @@ public class PromotionController {
         return ResponseEntity.status(HttpStatus.OK).body(promotionService.findAllPromotionsDto());
     }
 
-    @GetMapping
-    public ResponseEntity<PromotionDto> getAvailablePromotion()
+    @GetMapping("/get-applicable")
+    public ResponseEntity<List<PromotionSummary>> getApplicablePromotions(@RequestBody ConsultPromotionsDto promotion){
+        return ResponseEntity.status(HttpStatus.OK).body(promotionService.checkCompatibility(promotion));
+    }
 
 
 }

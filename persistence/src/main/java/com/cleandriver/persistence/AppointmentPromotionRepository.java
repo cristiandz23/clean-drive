@@ -18,6 +18,7 @@ public interface AppointmentPromotionRepository extends JpaRepository<Appointmen
             "JOIN vehicle AS v ON v.vehicle_id = ap.vehicle_id " +
             "WHERE app.promotion_id = :promotionId " +
             "AND v.plate_number = :plateNumber " +
+//            "AND app.was_apply = true" +
             "AND ap.appointment_status = 'COMPLETED' " +
             "AND ap.start_date_time BETWEEN :startPromotion AND :endPromotion " +
             "ORDER BY ap.start_date_time DESC ",
